@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — Master Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #F5F0E8;
+  --ink: #1A1712;
+  --ink2: #3D3A35;
+  --muted: #8C8880;
+  --accent: #C4531A;
+  --accent2: #E8875A;
+  --blue: #2B5EA7;
+  --blue2: #4A7DC4;
+  --green: #1F6B45;
+  --green2: #3A9B6A;
+  --purple: #5B3E8F;
+  --purple2: #8B6EC4;
+  --teal: #1A6B6B;
+  --teal2: #3A9B9B;
+  --amber: #A06010;
+  --amber2: #D4882A;
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'DM Sans', sans-serif;
+  --slide-w: 1280px;
+  --slide-h: 720px;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: #111; font-family: var(--sans); }
+
+/* ── DECK SHELL ── */
+#deck {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #111;
+  position: relative;
+}
+
+/* ── SLIDE STAGE ── */
+#stage {
+  position: relative;
+  background: var(--cream);
+  overflow: hidden;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.7);
+}
+
+/* ── SLIDES ── */
+.slide {
+  position: absolute; inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+  transform: translateX(60px);
+}
+.slide.active {
+  opacity: 1; pointer-events: all; transform: translateX(0);
+}
+.slide.exit-left {
+  opacity: 0; transform: translateX(-60px);
+}
+
+/* ── BOTTOM BAR ── */
+#bar {
+  display: flex; align-items: center; gap: 0;
+  margin-top: 14px;
+  width: 100%;
+  max-width: var(--slide-w);
+  padding: 0 4px;
+  justify-content: space-between;
+}
+
+.nav-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #ccc;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.3px;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.slide-counter { font-size: 13px; color: #888; letter-spacing: 0.5px; }
+
+.dots {
+  display: flex; gap: 6px; align-items: center;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all .2s;
+}
+.dot.active { background: var(--accent2); width: 20px; border-radius: 3px; }
+.dot:hover { background: rgba(255,255,255,0.4); }
+
+/* ── SLIDE COMMON ELEMENTS ── */
+.slide-num {
+  position: absolute;
+  top: 32px; right: 40px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-family: var(--mono);
+}
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  padding: 5px 14px;
+  border-radius: 99px;
+  margin-bottom: 20px;
+}
+
+/* ═══════════════════════════════════
+   SLIDE 1 — TITLE
+═══════════════════════════════════ */
+#s1 {
+  background: var(--ink);
+  display: flex;
+}
+
+#s1 .left-panel {
+  width: 62%;
+  padding: 72px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#s1 .right-panel {
+  width: 38%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#s1 .right-panel::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  border: 60px solid rgba(255,255,255,0.07);
+  top: -80px; right: -80px;
+}
+#s1 .right-panel::after {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  border: 40px solid rgba(255,255,255,0.07);
+  bottom: -60px; left: -60px;
+}
+
+#s1 .hero-icon {
+  font-size: 80px;
+  line-height: 1;
+  position: relative; z-index: 1;
+}
+
+#s1 .kicker {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--accent2);
+  margin-bottom: 20px;
+}
+
+#s1 h1 {
+  font-family: var(--serif);
+  font-size: 62px;
+  line-height: 1.05;
+  color: #fff;
+  font-weight: 400;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+
+#s1 h1 em {
+  font-style: italic;
+  color: var(--accent2);
+}
+
+#s1 .subtitle {
+  font-size: 17px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+  max-width: 480px;
+  margin-bottom: 48px;
+}
+
+#s1 .meta-row {
+  display: flex; gap: 32px;
+}
+.meta-item .num { font-family: var(--serif); font-size: 32px; color: var(--accent2); font-style: italic; }
+.meta-item .lbl { font-size: 12px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* ═══════════════════════════════════
+   SLIDE 2 — AGENDA / STACK
+═══════════════════════════════════ */
+#s2 {
+  background: var(--cream);
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+
+#s2 h2 {
+  font-family: var(--serif);
+  font-size: 44px;
+  color: var(--ink);
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+#s2 .sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  flex: 1;
+}
+
+.stack-card {
+  border-radius: 14px;
+  padding: 22px 20px;
+  display: flex; flex-direction: column;
+  cursor: pointer;
+  transition: transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.stack-card:hover { transform: translateY(-3px); }
+
+.stack-card .card-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.5;
+  margin-bottom: 12px;
+}
+.stack-card .card-icon { font-size: 28px; margin-bottom: 12px; }
+.stack-card .card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.stack-card .card-desc { font-size: 12px; line-height: 1.5; opacity: 0.7; }
+.stack-card .card-tag {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+.sc-orange { background: #3D2518; color: #E8A87C; }
+.sc-orange .card-tag { background: rgba(196,83,26,0.3); color: #E8A87C; }
+.sc-blue { background: #182338; color: #7AABDF; }
+.sc-blue .card-tag { background: rgba(43,94,167,0.3); color: #7AABDF; }
+.sc-green { background: #182A22; color: #6DC49A; }
+.sc-green .card-tag { background: rgba(31,107,69,0.3); color: #6DC49A; }
+.sc-purple { background: #261B3A; color: #B08CE0; }
+.sc-purple .card-tag { background: rgba(91,62,143,0.3); color: #B08CE0; }
+.sc-teal { background: #182A2A; color: #6DC4C4; }
+.sc-amber { background: #2E2010; color: #D4A44A; }
+.sc-pink { background: #2E1A2A; color: #D48AC0; }
+.sc-gray { background: #252420; color: #B0ACA8; }
+
+/* ═══════════════════════════════════
+   SLIDE 3 — INSTALL
+═══════════════════════════════════ */
+#s3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+
+#s3 .left {
+  background: var(--ink);
+  padding: 60px 56px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+#s3 .right {
+  background: #13110E;
+  padding: 48px 48px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+#s3 h2 {
+  font-family: var(--serif);
+  font-size: 42px; font-weight: 400;
+  color: #fff; line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+#s3 .desc { font-size: 15px; color: rgba(255,255,255,0.45); line-height: 1.65; margin-bottom: 36px; }
+
+.install-step {
+  display: flex; gap: 16px; margin-bottom: 22px; align-items: flex-start;
+}
+.step-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+}
+.step-content .step-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.step-content .step-note { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+.terminal-block {
+  background: #0A0C0F;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.tb-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 14px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.tb-dot { width: 9px; height: 9px; border-radius: 50%; }
+.tb-dot:nth-child(1) { background: #FF5F57; }
+.tb-dot:nth-child(2) { background: #FEBC2E; }
+.tb-dot:nth-child(3) { background: #28C840; }
+.tb-label { font-size: 11px; color: rgba(255,255,255,0.25); font-family: var(--mono); margin-left: 6px; }
+.tb-body { padding: 16px 18px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9; }
+.t-p { color: #4ECB8D; }
+.t-c { color: #E8EAF0; }
+.t-o { color: rgba(255,255,255,0.35); }
+.t-s { color: #4ECB8D; }
+.t-i { color: #7AABDF; }
+
+.dir-tree {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 2;
+  color: rgba(255,255,255,0.5);
+}
+.dir-tree .hl { color: var(--accent2); }
+.dir-tree .dm { color: rgba(255,255,255,0.25); }
+
+/* ═══════════════════════════════════
+   SLIDE 4 — CLAUDE.MD
+═══════════════════════════════════ */
+#s4 {
+  background: var(--cream);
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+
+#s4 .top { display: flex; gap: 40px; flex: 1; min-height: 0; }
+#s4 .top-left { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+#s4 .top-right { width: 46%; }
+
+#s4 h2 {
+  font-family: var(--serif);
+  font-size: 46px; font-weight: 400;
+  color: var(--ink); margin-bottom: 10px;
+  line-height: 1.1;
+}
+#s4 .sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; max-width: 420px; }
+
+.fact-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+.fact-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 8px 14px;
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--ink2);
+  font-weight: 500;
+}
+.pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.warn-box {
+  background: #FFF4EE;
+  border: 1px solid rgba(196,83,26,0.2);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.warn-box .wb-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 5px; }
+.warn-box p { font-size: 13px; color: var(--ink2); line-height: 1.55; }
+
+.code-panel {
+  background: var(--ink);
+  border-radius: 14px;
+  overflow: hidden;
+  height: 100%;
+  display: flex; flex-direction: column;
+}
+.cp-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cp-dots { display: flex; gap: 5px; }
+.cp-dot { width: 9px; height: 9px; border-radius: 50%; }
+.cp-dot:nth-child(1) { background: #FF5F57; }
+.cp-dot:nth-child(2) { background: #FEBC2E; }
+.cp-dot:nth-child(3) { background: #28C840; }
+.cp-file { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.35); margin-left: 4px; }
+.cp-body {
+  padding: 20px 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.8;
+  flex: 1;
+  overflow: hidden;
+}
+.kw { color: #C792EA; }
+.str { color: #C3E88D; }
+.com { color: #4A5568; font-style: italic; }
+.prop { color: #7AABDF; }
+.val { color: #E8A87C; }
+.fn { color: #82AAFF; }
+.num { color: #F0C040; }
+
+/* ═══════════════════════════════════
+   SLIDE 5 — SKILLS
+═══════════════════════════════════ */
+#s5 {
+  background: #1A2338;
+  display: flex;
+}
+
+#s5 .left {
+  width: 38%;
+  background: var(--blue);
+  padding: 60px 52px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+#s5 .left::after {
+  content: '/';
+  position: absolute;
+  font-family: var(--serif);
+  font-size: 300px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.05);
+  bottom: -40px; right: -20px;
+  line-height: 1;
+}
+
+#s5 .left h2 {
+  font-family: var(--serif);
+  font-size: 48px; font-weight: 400;
+  color: #fff; line-height: 1.1;
+  margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+#s5 .left .desc {
+  font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.65;
+  position: relative; z-index: 1; margin-bottom: 28px;
+}
+
+.skill-badges { display: flex; flex-wrap: wrap; gap: 8px; position: relative; z-index: 1; }
+.skill-badge {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.85);
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 12px; font-weight: 500; font-family: var(--mono);
+}
+
+#s5 .right {
+  flex: 1; padding: 48px 48px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+.skill-anatomy {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.sa-header { padding: 12px 18px; background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sa-file { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.35); }
+.sa-body { padding: 18px 20px; font-family: var(--mono); font-size: 12px; line-height: 1.8; }
+
+.frontmatter-table { width: 100%; }
+.fm-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; align-items: flex-start; }
+.fm-row:last-child { border-bottom: none; }
+.fm-key { width: 180px; flex-shrink: 0; font-family: var(--mono); color: #7AABDF; font-size: 11.5px; }
+.fm-val { color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+/* ═══════════════════════════════════
+   SLIDE 6 — AGENTS
+═══════════════════════════════════ */
+#s6 {
+  background: var(--cream);
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+
+#s6 h2 {
+  font-family: var(--serif);
+  font-size: 46px; font-weight: 400;
+  color: var(--ink); margin-bottom: 8px;
+}
+#s6 .sub { font-size: 14px; color: var(--muted); margin-bottom: 36px; }
+
+#s6 .content { display: flex; gap: 32px; flex: 1; min-height: 0; }
+#s6 .col-left { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+#s6 .col-right { width: 44%; }
+
+.agent-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: all .15s;
+  cursor: pointer;
+}
+.agent-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateX(4px); }
+
+.agent-icon-wrap {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.ac-purple .agent-icon-wrap { background: #F0EBF9; }
+.ac-green .agent-icon-wrap { background: #E8F5EE; }
+.ac-teal .agent-icon-wrap { background: #E5F5F5; }
+
+.agent-info h4 { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.agent-info p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.agent-tools {
+  margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;
+}
+.agent-tool {
+  font-size: 10px; font-family: var(--mono);
+  background: #F5F0E8; color: var(--ink2);
+  padding: 2px 7px; border-radius: 4px;
+  font-weight: 500;
+}
+
+.invoke-block {
+  background: var(--ink);
+  border-radius: 14px;
+  overflow: hidden;
+  height: 100%;
+}
+.ib-header { padding: 12px 18px; background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); }
+.ib-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+.ib-body { padding: 22px; }
+
+.invoke-method { margin-bottom: 20px; }
+.im-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); margin-bottom: 8px; }
+.im-code {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--mono); font-size: 12px;
+  color: #C3E88D; line-height: 1.7;
+}
+
+/* ═══════════════════════════════════
+   SLIDE 7 — SUB-AGENTS
+═══════════════════════════════════ */
+#s7 {
+  background: #1A2A28;
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+
+#s7 h2 {
+  font-family: var(--serif);
+  font-size: 46px; font-weight: 400;
+  color: #fff; margin-bottom: 8px;
+}
+#s7 .sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 36px; }
+
+#s7 .content { display: flex; gap: 32px; flex: 1; min-height: 0; }
+#s7 .col-diagram { flex: 1; }
+#s7 .col-right { width: 42%; display: flex; flex-direction: column; gap: 14px; }
+
+.sub-vs {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.sv-header { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.sv-header div { padding: 10px 14px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+.sv-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
+.sv-row div { padding: 10px 14px; color: rgba(255,255,255,0.6); }
+.sv-row div:first-child { color: rgba(255,255,255,0.35); font-weight: 600; font-size: 11px; }
+
+.parallel-viz {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 20px;
+  flex: 1;
+}
+.pv-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.35); margin-bottom: 16px; }
+.pv-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pv-label { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.45); width: 90px; flex-shrink: 0; }
+.pv-bar { height: 24px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; font-weight: 600; transition: width 1s ease; }
+.pv-bar.web { background: rgba(74,125,196,0.3); border: 1px solid rgba(74,125,196,0.5); color: #7AABDF; }
+.pv-bar.so { background: rgba(58,155,106,0.3); border: 1px solid rgba(58,155,106,0.5); color: #6DC49A; }
+.pv-bar.cb { background: rgba(63,155,155,0.3); border: 1px solid rgba(63,155,155,0.5); color: #6DC4C4; }
+
+/* ═══════════════════════════════════
+   SLIDE 8 — HOOKS
+═══════════════════════════════════ */
+#s8 {
+  background: var(--cream);
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+#s8 h2 {
+  font-family: var(--serif);
+  font-size: 46px; font-weight: 400;
+  color: var(--ink); margin-bottom: 8px;
+}
+#s8 .sub { font-size: 14px; color: var(--muted); margin-bottom: 36px; }
+
+#s8 .content { display: flex; gap: 28px; flex: 1; min-height: 0; }
+#s8 .events-col { width: 38%; display: flex; flex-direction: column; gap: 10px; }
+#s8 .code-col { flex: 1; }
+
+.hook-event {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hook-event:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.hook-event .he-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.hook-event h5 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 3px; font-family: var(--mono); }
+.hook-event p { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.hook-event .block-badge {
+  font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 99px;
+  margin-left: auto; flex-shrink: 0; align-self: center;
+}
+.can-block { background: #E8F5EE; color: var(--green); }
+.no-block { background: #F5F0E8; color: var(--muted); }
+
+/* ═══════════════════════════════════
+   SLIDE 9 — MCP
+═══════════════════════════════════ */
+#s9 {
+  background: #1E1A30;
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+#s9 h2 {
+  font-family: var(--serif);
+  font-size: 46px; font-weight: 400;
+  color: #fff; margin-bottom: 8px;
+}
+#s9 .sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 36px; }
+
+#s9 .content { display: flex; gap: 28px; flex: 1; min-height: 0; }
+
+.mcp-servers { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.mcp-server {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.ms-icon { font-size: 22px; flex-shrink: 0; }
+.ms-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); margin-bottom: 2px; }
+.ms-pkg { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.3); }
+.ms-caps { margin-left: auto; display: flex; gap: 5px; }
+.ms-cap { font-size: 10px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); padding: 2px 8px; border-radius: 99px; }
+
+#s9 .config-col { width: 46%; }
+
+/* ═══════════════════════════════════
+   SLIDE 10 — CHEAT SHEET
+═══════════════════════════════════ */
+#s10 {
+  background: var(--ink);
+  display: flex; flex-direction: column;
+  padding: 52px 72px;
+}
+
+#s10 h2 {
+  font-family: var(--serif);
+  font-size: 44px; font-weight: 400;
+  color: #fff; margin-bottom: 32px;
+}
+
+#s10 .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; flex: 1; }
+
+.cs-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+.cs-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.3); margin-bottom: 14px; }
+.cs-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; gap: 8px; }
+.cs-row:last-child { border-bottom: none; }
+.cs-key { font-family: var(--mono); color: var(--accent2); font-size: 11.5px; }
+.cs-desc { color: rgba(255,255,255,0.45); text-align: right; font-size: 11px; }
+.cs-val { font-family: var(--mono); color: rgba(255,255,255,0.55); font-size: 11px; }
+
+/* ═══════════════════════════════════
+   SLIDE 11 — CLOSING
+═══════════════════════════════════ */
+#s11 {
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#s11::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  border: 80px solid rgba(255,255,255,0.08);
+  top: -200px; left: -200px;
+}
+#s11::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  border: 60px solid rgba(255,255,255,0.06);
+  bottom: -180px; right: -180px;
+}
+
+#s11 .inner { position: relative; z-index: 1; }
+
+#s11 .big-icon { font-size: 64px; margin-bottom: 24px; }
+#s11 h2 {
+  font-family: var(--serif);
+  font-size: 58px; font-weight: 400; font-style: italic;
+  color: #fff; line-height: 1.1;
+  margin-bottom: 20px;
+}
+#s11 p { font-size: 17px; color: rgba(255,255,255,0.7); margin-bottom: 36px; max-width: 480px; line-height: 1.65; }
+
+.closing-links { display: flex; gap: 16px; justify-content: center; }
+.cl-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 13px; font-weight: 600; font-family: var(--sans);
+  cursor: pointer; transition: all .15s;
+}
+.cl-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* ─── KEYBOARD HINT ─── */
+#key-hint {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 7px 16px; border-radius: 99px;
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  pointer-events: none;
+  animation: fadeOut 1s ease 3s forwards;
+}
+@keyframes fadeOut { to { opacity: 0; } }
+
+</style>
+</head>
+<body>
+
+<div id="deck">
+  <div id="stage">
+
+    <!-- ══ SLIDE 1: TITLE ══ -->
+    <div class="slide active" id="s1">
+      <div class="left-panel">
+        <div>
+          <div class="kicker">Complete Master Guide · 2026</div>
+          <h1>Claude<br><em>Code</em></h1>
+          <p class="subtitle">Everything you need to know — CLAUDE.md, Skills, Agents, Sub-Agents, Hooks, MCP, and more. From first install to advanced orchestration.</p>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item"><div class="num">9</div><div class="lbl">Core Concepts</div></div>
+          <div class="meta-item"><div class="num">11</div><div class="lbl">Slides</div></div>
+          <div class="meta-item"><div class="num">40+</div><div class="lbl">Code Examples</div></div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="hero-icon">✦</div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2: AGENDA ══ -->
+    <div class="slide" id="s2">
+      <div class="slide-num">02 / 11</div>
+      <div class="section-label" style="background:#F5F0E8; color:var(--muted); border: 1px solid rgba(0,0,0,0.08);">📋 What We'll Cover</div>
+      <h2>The Extension Stack</h2>
+      <p class="sub">Seven layers that stack on top of each other. Master all seven, master Claude Code.</p>
+      <div class="stack-grid">
+        <div class="stack-card sc-orange">
+          <div class="card-num">01</div>
+          <div class="card-icon">📄</div>
+          <div class="card-title">CLAUDE.md</div>
+          <div class="card-desc">Project memory — always loaded context, rules & conventions</div>
+          <div class="card-tag">Always on</div>
+        </div>
+        <div class="stack-card sc-blue">
+          <div class="card-num">02</div>
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Skills & Commands</div>
+          <div class="card-desc">Reusable workflows as /slash commands or auto-triggered</div>
+          <div class="card-tag">On demand</div>
+        </div>
+        <div class="stack-card sc-purple">
+          <div class="card-num">03</div>
+          <div class="card-icon">🤖</div>
+          <div class="card-title">Agents</div>
+          <div class="card-desc">Specialist AI workers with isolated context windows</div>
+          <div class="card-tag">Invoked</div>
+        </div>
+        <div class="stack-card sc-teal">
+          <div class="card-num">04</div>
+          <div class="card-icon">🔀</div>
+          <div class="card-title">Sub-Agents</div>
+          <div class="card-desc">Parallel workers spawned for concurrent task execution</div>
+          <div class="card-tag">Parallel</div>
+        </div>
+        <div class="stack-card sc-amber">
+          <div class="card-num">05</div>
+          <div class="card-icon">🪝</div>
+          <div class="card-title">Hooks</div>
+          <div class="card-desc">Deterministic code that fires at lifecycle events</div>
+          <div class="card-tag">Event-driven</div>
+        </div>
+        <div class="stack-card sc-green">
+          <div class="card-num">06</div>
+          <div class="card-icon">🔌</div>
+          <div class="card-title">MCP Servers</div>
+          <div class="card-desc">Universal adapters for GitHub, DB, Slack, Figma & more</div>
+          <div class="card-tag">Protocol</div>
+        </div>
+        <div class="stack-card sc-pink">
+          <div class="card-num">07</div>
+          <div class="card-icon">📦</div>
+          <div class="card-title">Plugins</div>
+          <div class="card-desc">Distributable bundles of skills, agents, hooks & commands</div>
+          <div class="card-tag">Shareable</div>
+        </div>
+        <div class="stack-card sc-gray">
+          <div class="card-num">+</div>
+          <div class="card-icon">🚀</div>
+          <div class="card-title">Agent Teams</div>
+          <div class="card-desc">Multiple Claude sessions coordinating & messaging each other</div>
+          <div class="card-tag">New Feb 26</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3: INSTALL ══ -->
+    <div class="slide" id="s3">
+      <div class="left">
+        <div class="slide-num" style="color:rgba(255,255,255,0.3)">03 / 11</div>
+        <div class="section-label" style="background:rgba(78,203,141,0.15); color:#4ECB8D; border:1px solid rgba(78,203,141,0.25);">⚡ Setup</div>
+        <h2>Install &amp;<br>Launch</h2>
+        <p class="desc">Node.js 18+ required. Runs on macOS, Linux, and Windows (WSL). Available via CLI, VS Code, JetBrains, and claude.ai/code.</p>
+
+        <div class="install-step">
+          <div class="step-badge">1</div>
+          <div class="step-content">
+            <div class="step-title">Install globally with npm</div>
+            <div class="step-note">npm install -g @anthropic-ai/claude-code</div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-badge">2</div>
+          <div class="step-content">
+            <div class="step-title">Navigate to your project &amp; launch</div>
+            <div class="step-note">cd my-project &amp;&amp; claude</div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-badge">3</div>
+          <div class="step-content">
+            <div class="step-title">Run /init to generate CLAUDE.md</div>
+            <div class="step-note">Claude analyzes your project automatically</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="terminal-block" style="margin-bottom:20px">
+          <div class="tb-header">
+            <div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div>
+            <div class="tb-label">Terminal</div>
+          </div>
+          <div class="tb-body">
+            <div><span class="t-p">$ </span><span class="t-c">npm install -g @anthropic-ai/claude-code</span></div>
+            <div class="t-o">+ @anthropic-ai/claude-code@2.x</div>
+            <div class="t-s">✓ Installation complete</div>
+            <div>&nbsp;</div>
+            <div><span class="t-p">$ </span><span class="t-c">cd my-project && claude</span></div>
+            <div class="t-i">✦ Claude Code (claude-sonnet-4-6)</div>
+            <div class="t-o">Type /help for commands</div>
+            <div>&nbsp;</div>
+            <div><span class="t-p">&gt; </span><span class="t-c">/init</span></div>
+            <div class="t-i">Analyzing project structure...</div>
+            <div class="t-s">✓ Generated CLAUDE.md</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:18px;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); margin-bottom:12px;">Directory Structure</div>
+          <div class="dir-tree">
+            <div><span class="hl">~/.claude/</span><span class="dm">          # Global</span></div>
+            <div><span class="dm">  ├── </span><span class="hl">agents/</span><span class="dm">       # Personal agents</span></div>
+            <div><span class="dm">  ├── </span><span class="hl">skills/</span><span class="dm">       # Personal skills</span></div>
+            <div><span class="dm">  └── </span><span class="hl">settings.json</span></div>
+            <div>&nbsp;</div>
+            <div><span class="hl">your-project/</span></div>
+            <div><span class="dm">  ├── </span><span class="hl">CLAUDE.md</span><span class="dm">     # Project memory</span></div>
+            <div><span class="dm">  └── .claude/</span><span class="dm">      # Project-level</span></div>
+            <div><span class="dm">       ├── agents/</span></div>
+            <div><span class="dm">       └── skills/</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4: CLAUDE.MD ══ -->
+    <div class="slide" id="s4">
+      <div class="slide-num">04 / 11</div>
+      <div class="section-label" style="background:#FFF4EE; color:var(--accent); border:1px solid rgba(196,83,26,0.2);">📄 Layer 1</div>
+      <h2>CLAUDE.md — Project Memory</h2>
+      <p class="sub">Loaded at every session start. Claude's permanent context about your project — stack, conventions, architecture, and forbidden patterns.</p>
+
+      <div class="top">
+        <div class="top-left">
+          <div class="fact-pills">
+            <div class="fact-pill"><div class="pill-dot" style="background:var(--accent)"></div>Loaded every session</div>
+            <div class="fact-pill"><div class="pill-dot" style="background:var(--blue)"></div>Commit to git</div>
+            <div class="fact-pill"><div class="pill-dot" style="background:var(--green)"></div>Hierarchical (per-dir)</div>
+            <div class="fact-pill"><div class="pill-dot" style="background:var(--purple)"></div>Keep under 200 lines</div>
+          </div>
+
+          <div style="margin-bottom:16px">
+            <div style="font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px;">What to include:</div>
+            <div style="display:flex; flex-direction:column; gap:7px;">
+              <div style="display:flex; gap:10px; font-size:13px; color:var(--ink2); align-items:flex-start;">
+                <span style="color:var(--accent); font-weight:700; flex-shrink:0;">→</span>
+                <span><strong>Tech stack</strong> — frameworks, databases, key libraries</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:13px; color:var(--ink2); align-items:flex-start;">
+                <span style="color:var(--accent); font-weight:700; flex-shrink:0;">→</span>
+                <span><strong>Coding conventions</strong> — patterns to always follow</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:13px; color:var(--ink2); align-items:flex-start;">
+                <span style="color:var(--accent); font-weight:700; flex-shrink:0;">→</span>
+                <span><strong>Architecture</strong> — key directories and what lives there</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:13px; color:var(--ink2); align-items:flex-start;">
+                <span style="color:var(--accent); font-weight:700; flex-shrink:0;">→</span>
+                <span><strong>Never-do rules</strong> — explicit prohibitions</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:13px; color:var(--ink2); align-items:flex-start;">
+                <span style="color:var(--accent); font-weight:700; flex-shrink:0;">→</span>
+                <span><strong>Test command</strong> — how to verify changes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="warn-box">
+            <div class="wb-label">⚠ The 150-instruction limit</div>
+            <p>LLMs reliably follow ~150 instructions max. Claude Code's system prompt uses ~50. You get ~100 slots. More instructions = less reliable attention to critical rules. Keep it focused.</p>
+          </div>
+        </div>
+
+        <div class="top-right">
+          <div class="code-panel">
+            <div class="cp-header">
+              <div class="cp-dots"><div class="cp-dot"></div><div class="cp-dot"></div><div class="cp-dot"></div></div>
+              <div class="cp-file">CLAUDE.md — example</div>
+            </div>
+            <div class="cp-body">
+<span class="com"># Acme E-commerce Platform</span>
+
+<span class="com">## Tech Stack</span>
+Next.js 14 (App Router), FastAPI, PostgreSQL
+Turborepo monorepo, Railway deployment
+
+<span class="com">## Coding Conventions</span>
+- TypeScript strict mode always on
+- Functional components only
+- Zod for all validation schemas
+- <span class="str">`{ data, error }`</span> API response shape
+
+<span class="com">## Architecture</span>
+/lib/db/repos/  — repository pattern
+/lib/auth.ts    — JWT auth utilities
+/app/api/       — API route handlers
+
+<span class="com">## Never Do</span>
+- Never use <span class="kw">any</span> (cast via unknown)
+- Never console.log in production
+- No class components
+
+<span class="com">## Testing</span>
+Run: <span class="str">`npm run type-check && npm test`</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 5: SKILLS ══ -->
+    <div class="slide" id="s5">
+      <div class="left">
+        <div class="slide-num" style="color:rgba(255,255,255,0.25)">05 / 11</div>
+        <div class="section-label" style="background:rgba(43,94,167,0.2); color:#7AABDF; border:1px solid rgba(43,94,167,0.3);">⚡ Layer 2</div>
+        <h2>Skills &amp;<br>Commands</h2>
+        <p class="desc">Markdown files that package reusable workflows. Invoked as /slash commands or auto-triggered when Claude detects relevance.</p>
+
+        <div class="skill-badges">
+          <div class="skill-badge">/code-review</div>
+          <div class="skill-badge">/deploy</div>
+          <div class="skill-badge">/research</div>
+          <div class="skill-badge">/test-fix</div>
+          <div class="skill-badge">/document</div>
+        </div>
+
+        <div style="margin-top:24px; background:rgba(255,255,255,0.06); border-radius:10px; padding:16px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.3); margin-bottom:10px;">3 invocation modes</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.6); line-height:1.9;">
+            <div>① <span style="color:#7AABDF">/slash-command</span> — user triggers manually</div>
+            <div>② <span style="color:#6DC49A">Auto-trigger</span> — Claude detects relevance</div>
+            <div>③ <span style="color:#6DC4C4">context: fork</span> — runs in sub-agent</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="skill-anatomy" style="margin-bottom:16px">
+          <div class="sa-header">
+            <div class="sa-file">.claude/skills/code-review/SKILL.md</div>
+          </div>
+          <div class="sa-body">
+<span class="com">---</span>
+<span class="prop">name</span>: <span class="str">code-review</span>
+<span class="prop">description</span>: <span class="str">Review code changes for quality and bugs.
+  Use when asked to review a PR or commit.</span>
+<span class="prop">allowed-tools</span>: <span class="str">Read, Grep, Glob, Bash(git:*)</span>
+<span class="prop">context</span>: <span class="str">fork</span>
+<span class="com">---</span>
+
+Review: <span class="val">$ARGUMENTS</span>
+
+Check for: logic errors, error handling,
+TypeScript types, security, performance.
+
+Return: SUMMARY + ISSUES (severity) + SUGGESTIONS
+          </div>
+        </div>
+
+        <div class="frontmatter-table">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.25); margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08);">Key frontmatter fields</div>
+          <div class="fm-row">
+            <div class="fm-key">name</div>
+            <div class="fm-val">The /slash-command name for invocation</div>
+          </div>
+          <div class="fm-row">
+            <div class="fm-key">description</div>
+            <div class="fm-val">Used by Claude for auto-invocation matching</div>
+          </div>
+          <div class="fm-row">
+            <div class="fm-key">allowed-tools</div>
+            <div class="fm-val">Whitelist: Read, Write, Bash(cmd:*), Grep…</div>
+          </div>
+          <div class="fm-row">
+            <div class="fm-key">context: fork</div>
+            <div class="fm-val">Runs in isolated sub-agent, keeps main clean</div>
+          </div>
+          <div class="fm-row">
+            <div class="fm-key">disable-model-invocation</div>
+            <div class="fm-val">true = user-only trigger (for deploy scripts)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 6: AGENTS ══ -->
+    <div class="slide" id="s6">
+      <div class="slide-num">06 / 11</div>
+      <div class="section-label" style="background:#F0EBF9; color:var(--purple); border:1px solid rgba(91,62,143,0.2);">🤖 Layer 3</div>
+      <h2>Agents</h2>
+      <p class="sub">Pre-configured AI specialists — each with their own system prompt, tools, model, and memory. The cure for context pollution.</p>
+
+      <div class="content">
+        <div class="col-left">
+          <div class="agent-card ac-purple">
+            <div class="agent-icon-wrap">🔍</div>
+            <div class="agent-info">
+              <h4>researcher</h4>
+              <p>Deep web research on any topic. Runs in background while you keep coding.</p>
+              <div class="agent-tools">
+                <span class="agent-tool">WebSearch</span>
+                <span class="agent-tool">WebFetch</span>
+                <span class="agent-tool">Read</span>
+              </div>
+            </div>
+          </div>
+          <div class="agent-card ac-green">
+            <div class="agent-icon-wrap">✅</div>
+            <div class="agent-info">
+              <h4>code-reviewer</h4>
+              <p>Reviews diffs for bugs, types, security. Read-only access by design.</p>
+              <div class="agent-tools">
+                <span class="agent-tool">Read</span>
+                <span class="agent-tool">Grep</span>
+                <span class="agent-tool">Bash(git:*)</span>
+              </div>
+            </div>
+          </div>
+          <div class="agent-card ac-teal">
+            <div class="agent-icon-wrap">🗄️</div>
+            <div class="agent-info">
+              <h4>db-explorer</h4>
+              <p>Read-only database queries. Hook enforces no writes at the code level.</p>
+              <div class="agent-tools">
+                <span class="agent-tool">Bash(psql:*)</span>
+                <span class="agent-tool">Read</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:#F5F0E8; border-radius:10px; padding:14px 16px; font-size:12px; color:var(--ink2); line-height:1.55;">
+            <strong>memory: project</strong> — agent builds up institutional knowledge across sessions. First thing it does each session: read its own MEMORY.md.
+          </div>
+        </div>
+
+        <div class="col-right">
+          <div class="invoke-block">
+            <div class="ib-header"><div class="ib-title">How to invoke agents</div></div>
+            <div class="ib-body">
+              <div class="invoke-method">
+                <div class="im-label">① Natural language</div>
+                <div class="im-code">Use the code-reviewer agent<br>to check my latest commit</div>
+              </div>
+              <div class="invoke-method">
+                <div class="im-label">② Direct @mention</div>
+                <div class="im-code">@researcher find all usages<br>of the deprecated API</div>
+              </div>
+              <div class="invoke-method">
+                <div class="im-label">③ Interactive menu</div>
+                <div class="im-code">/agents<br><span style="color:rgba(255,255,255,0.3)">&gt; Select agent + describe task</span></div>
+              </div>
+              <div class="invoke-method" style="margin-bottom:0">
+                <div class="im-label">④ Background (Ctrl+B)</div>
+                <div class="im-code">@researcher find patterns<br><span style="color:rgba(255,255,255,0.3)">[Ctrl+B] → runs while you work</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 7: SUB-AGENTS ══ -->
+    <div class="slide" id="s7">
+      <div class="slide-num" style="color:rgba(255,255,255,0.25)">07 / 11</div>
+      <div class="section-label" style="background:rgba(26,107,107,0.2); color:#6DC4C4; border:1px solid rgba(26,107,107,0.3);">🔀 Layer 4</div>
+      <h2>Sub-Agents</h2>
+      <p class="sub">Parallel workers spawned by a parent agent via the Task tool. The engine of concurrent execution in Claude Code.</p>
+
+      <div class="content">
+        <div class="col-diagram">
+          <div class="sub-vs" style="margin-bottom:14px">
+            <div class="sv-header">
+              <div></div>
+              <div>Agents</div>
+              <div>Sub-Agents</div>
+            </div>
+            <div class="sv-row">
+              <div>Invoked by</div>
+              <div>User / parent</div>
+              <div>Parent via Task tool</div>
+            </div>
+            <div class="sv-row">
+              <div>Reports to</div>
+              <div>Main session</div>
+              <div>Parent agent</div>
+            </div>
+            <div class="sv-row">
+              <div>Parallelism</div>
+              <div>Sequential</div>
+              <div>Concurrent ✓</div>
+            </div>
+            <div class="sv-row">
+              <div>Can spawn more?</div>
+              <div>Yes (sub-agents)</div>
+              <div>No (one level)</div>
+            </div>
+          </div>
+
+          <div class="code-panel" style="flex:1; border-radius:12px; overflow:hidden">
+            <div class="cp-header">
+              <div class="cp-dots"><div class="cp-dot"></div><div class="cp-dot"></div><div class="cp-dot"></div></div>
+              <div class="cp-file">SKILL.md — parallel research pattern</div>
+            </div>
+            <div class="cp-body">
+<span class="com">---</span>
+<span class="prop">name</span>: <span class="str">research</span>
+<span class="prop">allowed-tools</span>: <span class="str">Task, WebSearch, Grep, Read</span>
+<span class="com">---</span>
+
+Research: <span class="val">$ARGUMENTS</span>
+
+<span class="kw">## Launch parallel sub-agents:</span>
+
+Use Task tool to spawn <span class="fn">simultaneously</span>:
+<span class="num">1</span>. Web docs agent — official docs + GitHub issues
+<span class="num">2</span>. Stack Overflow agent — voted answers + gotchas
+<span class="num">3</span>. Codebase agent — grep for existing usage
+
+Aggregate findings → report best approach
+            </div>
+          </div>
+        </div>
+
+        <div class="col-right">
+          <div class="parallel-viz">
+            <div class="pv-title">Parallel execution timeline</div>
+            <div class="pv-row">
+              <div class="pv-label">Parent</div>
+              <div class="pv-bar" style="background:rgba(196,83,26,0.25); border:1px solid rgba(196,83,26,0.4); color:#E8875A; width:100%;">Orchestrating ↓</div>
+            </div>
+            <div style="height:10px"></div>
+            <div class="pv-row">
+              <div class="pv-label">Web Agent</div>
+              <div class="pv-bar web" style="width:75%;">Searching docs...</div>
+            </div>
+            <div class="pv-row">
+              <div class="pv-label">SO Agent</div>
+              <div class="pv-bar so" style="width:60%;">Finding answers...</div>
+            </div>
+            <div class="pv-row">
+              <div class="pv-label">Code Agent</div>
+              <div class="pv-bar cb" style="width:85%;">Grepping codebase...</div>
+            </div>
+            <div style="height:16px; border-left:2px dashed rgba(255,255,255,0.1); margin-left:45px"></div>
+            <div class="pv-row">
+              <div class="pv-label">Synthesis</div>
+              <div class="pv-bar" style="background:rgba(232,168,124,0.2); border:1px solid rgba(232,168,124,0.4); color:#E8A87C; width:40%;">Aggregating →</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; margin-top:14px;">
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.3); margin-bottom:10px;">Agent with memory</div>
+            <div style="font-family:var(--mono); font-size:11.5px; line-height:1.9; color:rgba(255,255,255,0.55);">
+              <span class="com">---</span><br>
+              <span class="prop">memory</span>: <span class="str">project</span><br>
+              <span class="com">---</span><br>
+              Update memory with patterns,<br>
+              architecture decisions, and<br>
+              codebase insights you discover.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 8: HOOKS ══ -->
+    <div class="slide" id="s8">
+      <div class="slide-num">08 / 11</div>
+      <div class="section-label" style="background:#FFFBEE; color:var(--amber); border:1px solid rgba(160,96,16,0.2);">🪝 Layer 5</div>
+      <h2>Hooks</h2>
+      <p class="sub">Deterministic code at lifecycle events. Unlike instructions to Claude, hooks <em>always</em> run exactly the same way. No hallucinations, no variation.</p>
+
+      <div class="content">
+        <div class="events-col">
+          <div class="hook-event">
+            <div class="he-dot" style="background:#4A7DC4"></div>
+            <div>
+              <h5>PreToolUse</h5>
+              <p>Fires before any tool. Can block dangerous operations.</p>
+            </div>
+            <div class="block-badge can-block">Can block</div>
+          </div>
+          <div class="hook-event">
+            <div class="he-dot" style="background:#3A9B6A"></div>
+            <div>
+              <h5>PostToolUse</h5>
+              <p>After a tool completes. Run lint, notify, log.</p>
+            </div>
+            <div class="block-badge no-block">Read-only</div>
+          </div>
+          <div class="hook-event">
+            <div class="he-dot" style="background:#8B6EC4"></div>
+            <div>
+              <h5>PreAgentTurn</h5>
+              <p>Before each turn. Inject date, env vars, context.</p>
+            </div>
+            <div class="block-badge no-block">Read-only</div>
+          </div>
+          <div class="hook-event">
+            <div class="he-dot" style="background:#D4882A"></div>
+            <div>
+              <h5>PostAgentTurn</h5>
+              <p>After each turn. Desktop notify, Slack alert.</p>
+            </div>
+            <div class="block-badge no-block">Read-only</div>
+          </div>
+          <div class="hook-event">
+            <div class="he-dot" style="background:#C4531A"></div>
+            <div>
+              <h5>Stop</h5>
+              <p>Task complete. Trigger CI, send notifications.</p>
+            </div>
+            <div class="block-badge no-block">Read-only</div>
+          </div>
+        </div>
+
+        <div class="code-col">
+          <div class="code-panel" style="margin-bottom:14px; border-radius:12px; overflow:hidden">
+            <div class="cp-header">
+              <div class="cp-dots"><div class="cp-dot"></div><div class="cp-dot"></div><div class="cp-dot"></div></div>
+              <div class="cp-file">~/.claude/settings.json</div>
+            </div>
+            <div class="cp-body">
+{
+  <span class="prop">"hooks"</span>: {
+    <span class="prop">"PostToolUse"</span>: [{
+      <span class="prop">"matcher"</span>: <span class="str">"Write"</span>,
+      <span class="prop">"hooks"</span>: [{
+        <span class="prop">"type"</span>: <span class="str">"command"</span>,
+        <span class="prop">"command"</span>: <span class="str">"npm run lint --fix"</span>
+      }]
+    }],
+    <span class="prop">"Stop"</span>: [{
+      <span class="prop">"type"</span>: <span class="str">"command"</span>,
+      <span class="prop">"command"</span>: <span class="str">"./scripts/notify.sh"</span>
+    }]
+  }
+}
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div style="background:#F5F0E8; border-radius:10px; padding:14px;">
+              <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🔔 Notification hook</div>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink2); line-height:1.8; background:#fff; border-radius:6px; padding:10px;">osascript -e 'display<br>notification "Done"<br>with title "Claude"'</div>
+            </div>
+            <div style="background:#F5F0E8; border-radius:10px; padding:14px;">
+              <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">🛡️ Block dangerous git</div>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--ink2); line-height:1.8; background:#fff; border-radius:6px; padding:10px;">if cmd matches<br>"git push -f":<br>return block: true</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 9: MCP ══ -->
+    <div class="slide" id="s9">
+      <div class="slide-num" style="color:rgba(255,255,255,0.25)">09 / 11</div>
+      <div class="section-label" style="background:rgba(91,62,143,0.2); color:#B08CE0; border:1px solid rgba(91,62,143,0.3);">🔌 Layer 6</div>
+      <h2>MCP Servers</h2>
+      <p class="sub">Model Context Protocol — the universal adapter for AI tools. Connect Claude Code to GitHub, databases, Slack, Figma, and any external system.</p>
+
+      <div class="content">
+        <div class="mcp-servers">
+          <div class="mcp-server">
+            <div class="ms-icon">🐙</div>
+            <div>
+              <div class="ms-name">GitHub MCP</div>
+              <div class="ms-pkg">@modelcontextprotocol/server-github</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Issues</span><span class="ms-cap">PRs</span><span class="ms-cap">Search</span>
+            </div>
+          </div>
+          <div class="mcp-server">
+            <div class="ms-icon">🐘</div>
+            <div>
+              <div class="ms-name">PostgreSQL MCP</div>
+              <div class="ms-pkg">@modelcontextprotocol/server-postgres</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Query</span><span class="ms-cap">Schema</span>
+            </div>
+          </div>
+          <div class="mcp-server">
+            <div class="ms-icon">💬</div>
+            <div>
+              <div class="ms-name">Slack MCP</div>
+              <div class="ms-pkg">@modelcontextprotocol/server-slack</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Messages</span><span class="ms-cap">Channels</span>
+            </div>
+          </div>
+          <div class="mcp-server">
+            <div class="ms-icon">🎭</div>
+            <div>
+              <div class="ms-name">Playwright MCP</div>
+              <div class="ms-pkg">@modelcontextprotocol/server-playwright</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Browser</span><span class="ms-cap">Testing</span>
+            </div>
+          </div>
+          <div class="mcp-server">
+            <div class="ms-icon">🎨</div>
+            <div>
+              <div class="ms-name">Figma MCP</div>
+              <div class="ms-pkg">figma-mcp-server</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Designs</span><span class="ms-cap">Tokens</span>
+            </div>
+          </div>
+          <div class="mcp-server">
+            <div class="ms-icon">📋</div>
+            <div>
+              <div class="ms-name">Linear MCP</div>
+              <div class="ms-pkg">@linear/mcp-server</div>
+            </div>
+            <div class="ms-caps">
+              <span class="ms-cap">Issues</span><span class="ms-cap">Projects</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-col">
+          <div class="code-panel" style="border-radius:14px; overflow:hidden; height:100%">
+            <div class="cp-header">
+              <div class="cp-dots"><div class="cp-dot"></div><div class="cp-dot"></div><div class="cp-dot"></div></div>
+              <div class="cp-file">~/.claude/settings.json</div>
+            </div>
+            <div class="cp-body">
+{
+  <span class="prop">"mcpServers"</span>: {
+    <span class="prop">"github"</span>: {
+      <span class="prop">"command"</span>: <span class="str">"npx"</span>,
+      <span class="prop">"args"</span>: [<span class="str">"-y"</span>, <span class="str">"@mcp/server-github"</span>],
+      <span class="prop">"env"</span>: {
+        <span class="prop">"GITHUB_TOKEN"</span>: <span class="str">"${GITHUB_TOKEN}"</span>
+      }
+    },
+    <span class="prop">"postgres"</span>: {
+      <span class="prop">"command"</span>: <span class="str">"npx"</span>,
+      <span class="prop">"args"</span>: [<span class="str">"-y"</span>, <span class="str">"@mcp/server-postgres"</span>],
+      <span class="prop">"env"</span>: {
+        <span class="prop">"DATABASE_URL"</span>: <span class="str">"${DATABASE_URL}"</span>
+      }
+    }
+  }
+}
+<br>
+<span class="com"># Use in agent frontmatter:</span>
+<span class="prop">mcpServers</span>:
+  - <span class="str">github</span>
+<span class="prop">tools</span>: <span class="str">mcp__github__*</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 10: CHEAT SHEET ══ -->
+    <div class="slide" id="s10">
+      <div class="slide-num" style="color:rgba(255,255,255,0.25)">10 / 11</div>
+      <h2 style="font-family:var(--serif); font-size:38px; font-weight:400; color:#fff; margin-bottom:28px;">Quick Reference</h2>
+      <div class="grid">
+        <div class="cs-card">
+          <div class="cs-title">📋 Decision Framework</div>
+          <div class="cs-row"><div class="cs-key">Permanent context</div><div class="cs-val" style="color:#E8A87C">CLAUDE.md</div></div>
+          <div class="cs-row"><div class="cs-key">Reusable workflow</div><div class="cs-val" style="color:#7AABDF">Skill</div></div>
+          <div class="cs-row"><div class="cs-key">Specialist AI worker</div><div class="cs-val" style="color:#B08CE0">Agent</div></div>
+          <div class="cs-row"><div class="cs-key">Parallel execution</div><div class="cs-val" style="color:#6DC4C4">Sub-Agent</div></div>
+          <div class="cs-row"><div class="cs-key">Always-run code</div><div class="cs-val" style="color:#D4A44A">Hook</div></div>
+          <div class="cs-row"><div class="cs-key">External service</div><div class="cs-val" style="color:#B08CE0">MCP Server</div></div>
+          <div class="cs-row"><div class="cs-key">Bundle everything</div><div class="cs-val" style="color:#D48AC0">Plugin</div></div>
+        </div>
+
+        <div class="cs-card">
+          <div class="cs-title">⌨️ Built-in Commands</div>
+          <div class="cs-row"><div class="cs-key">/init</div><div class="cs-val">Generate CLAUDE.md</div></div>
+          <div class="cs-row"><div class="cs-key">/agents</div><div class="cs-val">Create & manage agents</div></div>
+          <div class="cs-row"><div class="cs-key">/clear</div><div class="cs-val">Clear context window</div></div>
+          <div class="cs-row"><div class="cs-key">/compact</div><div class="cs-val">Compress context</div></div>
+          <div class="cs-row"><div class="cs-key">/cost</div><div class="cs-val">Show token usage</div></div>
+          <div class="cs-row"><div class="cs-key">/plugins</div><div class="cs-val">Install plugins</div></div>
+          <div class="cs-row"><div class="cs-key">Ctrl+B</div><div class="cs-val">Background current agent</div></div>
+        </div>
+
+        <div class="cs-card">
+          <div class="cs-title">📄 Skill Frontmatter</div>
+          <div class="cs-row"><div class="cs-key">name</div><div class="cs-val">/slash-command name</div></div>
+          <div class="cs-row"><div class="cs-key">description</div><div class="cs-val">Auto-invoke trigger text</div></div>
+          <div class="cs-row"><div class="cs-key">allowed-tools</div><div class="cs-val">Tool whitelist</div></div>
+          <div class="cs-row"><div class="cs-key">context: fork</div><div class="cs-val">Isolated sub-agent run</div></div>
+          <div class="cs-row"><div class="cs-key">disable-model-invoc.</div><div class="cs-val">Manual-only trigger</div></div>
+          <div class="cs-row"><div class="cs-key">$ARGUMENTS</div><div class="cs-val">User's input after command</div></div>
+        </div>
+
+        <div class="cs-card">
+          <div class="cs-title">🤖 Agent Frontmatter</div>
+          <div class="cs-row"><div class="cs-key">tools</div><div class="cs-val">Allowed tool list</div></div>
+          <div class="cs-row"><div class="cs-key">model</div><div class="cs-val">Override model per agent</div></div>
+          <div class="cs-row"><div class="cs-key">memory</div><div class="cs-val">project | user | path</div></div>
+          <div class="cs-row"><div class="cs-key">background</div><div class="cs-val">true = async execution</div></div>
+          <div class="cs-row"><div class="cs-key">maxTurns</div><div class="cs-val">Safety turn limit</div></div>
+          <div class="cs-row"><div class="cs-key">mcpServers</div><div class="cs-val">Scoped MCP access</div></div>
+        </div>
+
+        <div class="cs-card">
+          <div class="cs-title">🪝 Hook Events</div>
+          <div class="cs-row"><div class="cs-key">PreToolUse</div><div class="cs-val" style="color:#4A7DC4">Can block ✓</div></div>
+          <div class="cs-row"><div class="cs-key">PostToolUse</div><div class="cs-val">After tool runs</div></div>
+          <div class="cs-row"><div class="cs-key">PreAgentTurn</div><div class="cs-val">Inject context</div></div>
+          <div class="cs-row"><div class="cs-key">PostAgentTurn</div><div class="cs-val">Notify on each turn</div></div>
+          <div class="cs-row"><div class="cs-key">Stop</div><div class="cs-val">Task completed</div></div>
+          <div class="cs-row"><div class="cs-key">SessionStart</div><div class="cs-val">Session begins</div></div>
+        </div>
+
+        <div class="cs-card">
+          <div class="cs-title">📁 File Locations</div>
+          <div class="cs-row"><div class="cs-key">~/.claude/agents/</div><div class="cs-val">Global agents</div></div>
+          <div class="cs-row"><div class="cs-key">.claude/agents/</div><div class="cs-val">Project agents</div></div>
+          <div class="cs-row"><div class="cs-key">~/.claude/skills/</div><div class="cs-val">Global skills</div></div>
+          <div class="cs-row"><div class="cs-key">.claude/skills/</div><div class="cs-val">Project skills</div></div>
+          <div class="cs-row"><div class="cs-key">~/.claude/settings.json</div><div class="cs-val">Global config</div></div>
+          <div class="cs-row"><div class="cs-key">CLAUDE.md</div><div class="cs-val">Project root</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 11: CLOSING ══ -->
+    <div class="slide" id="s11">
+      <div class="inner">
+        <div class="big-icon">✦</div>
+        <h2>You're ready.<br>Go build.</h2>
+        <p>Start with CLAUDE.md. Add a skill. Create an agent. Layer in hooks. Connect MCP. Each step compounds.</p>
+        <div class="closing-links">
+          <div class="cl-btn">docs.claude.com</div>
+          <div class="cl-btn">awesome-claude-code</div>
+          <div class="cl-btn">← Start Over</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+
+  <!-- ── BOTTOM BAR ── -->
+  <div id="bar">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Back</button>
+    <div class="dots" id="dotsContainer"></div>
+    <span class="slide-counter" id="counter">1 / 11</span>
+    <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<div id="key-hint">Use ← → arrow keys or click arrows to navigate</div>
+
+<script>
+  const TOTAL = 11;
+  let current = 1;
+  let isAnimating = false;
+
+  // Build dots
+  const dotsContainer = document.getElementById('dotsContainer');
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsContainer.appendChild(d);
+  }
+
+  function sizeStage() {
+    const stage = document.getElementById('stage');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - 60;
+    const W = 1280, H = 720;
+    const scale = Math.min(vw / W, vh / H, 1);
+    stage.style.width = W + 'px';
+    stage.style.height = H + 'px';
+    stage.style.transform = `scale(${scale})`;
+    stage.style.transformOrigin = 'center center';
+  }
+
+  sizeStage();
+  window.addEventListener('resize', sizeStage);
+
+  function goTo(n) {
+    if (n === current || isAnimating || n < 1 || n > TOTAL) return;
+    isAnimating = true;
+
+    const from = document.getElementById('s' + current);
+    const to = document.getElementById('s' + n);
+    const dir = n > current ? 1 : -1;
+
+    from.classList.remove('active');
+    from.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    from.style.opacity = '0';
+    from.style.transform = `translateX(${dir * -50}px)`;
+
+    to.style.transition = 'none';
+    to.style.opacity = '0';
+    to.style.transform = `translateX(${dir * 50}px)`;
+    to.style.display = 'flex';
+    to.offsetHeight;
+
+    to.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    to.style.opacity = '1';
+    to.style.transform = 'translateX(0)';
+
+    current = n;
+    updateUI();
+
+    setTimeout(() => {
+      from.style.opacity = '';
+      from.style.transform = '';
+      from.style.transition = '';
+      isAnimating = false;
+    }, 380);
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  function updateUI() {
+    document.getElementById('counter').textContent = current + ' / ' + TOTAL;
+    document.getElementById('prevBtn').disabled = current === 1;
+    document.getElementById('nextBtn').disabled = current === TOTAL;
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === current);
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); navigate(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); navigate(-1);
+    } else if (e.key === 'Home') {
+      goTo(1);
+    } else if (e.key === 'End') {
+      goTo(TOTAL);
+    }
+  });
+
+  // Closing buttons
+  document.querySelectorAll('.cl-btn').forEach((b, i) => {
+    b.addEventListener('click', () => {
+      if (i === 2) goTo(1);
+    });
+  });
+
+  // Stack cards → navigate to relevant slide
+  const cardSlides = [4, 5, 6, 7, 8, 9, 10, 10];
+  document.querySelectorAll('.stack-card').forEach((c, i) => {
+    c.addEventListener('click', () => goTo(cardSlides[i]));
+  });
+
+  updateUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG Interview Masterclass</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --accent: #6ee7b7;
+    --accent2: #818cf8;
+    --accent3: #f472b6;
+    --accent4: #fbbf24;
+    --text: #e2e4ed;
+    --text-muted: #7b7f96;
+    --text-dim: #4a4e63;
+    --code-bg: #12141a;
+    --tag-green: #064e3b;
+    --tag-blue: #1e1b4b;
+    --tag-pink: #4a0d2e;
+    --tag-amber: #451a03;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ─── Layout ─── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ─── Sidebar ─── */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .logo-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .sidebar-progress {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .nav-section-label {
+    padding: 16px 24px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: 'Syne', sans-serif;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { background: var(--surface2); }
+
+  .nav-item.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+  }
+
+  .nav-item.active .nav-label { color: var(--accent); }
+
+  .nav-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  .nav-item.done .nav-dot { background: var(--accent); }
+  .nav-item.active .nav-dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(110,231,183,0.15); }
+
+  .nav-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .nav-num {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    margin-left: auto;
+  }
+
+  /* ─── Main Content ─── */
+  .main {
+    margin-left: 280px;
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 60px 64px 48px;
+    border-bottom: 1px solid var(--border);
+    background: radial-gradient(ellipse 80% 50% at 60% 0%, rgba(110,231,183,0.04) 0%, transparent 70%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: 'RAG';
+    position: absolute;
+    right: 48px; top: 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 160px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.018);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(110,231,183,0.08);
+    border: 1px solid rgba(110,231,183,0.2);
+    color: var(--accent);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .hero-eyebrow::before { content: '●'; font-size: 7px; }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .hero-title span { color: var(--accent); }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    font-style: italic;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ─── Section Container ─── */
+  .sections-container {
+    padding: 0 64px 80px;
+  }
+
+  /* ─── Section ─── */
+  .section {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    padding: 48px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.15;
+  }
+
+  .section-title .accent { color: var(--accent); }
+
+  .section-intro {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 640px;
+    font-style: italic;
+    line-height: 1.7;
+  }
+
+  /* ─── Concept Cards ─── */
+  .concept-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .concept-card:hover { border-color: var(--accent2); }
+
+  .concept-card-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .concept-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: rgba(110,231,183,0.08);
+    border: 1px solid rgba(110,231,183,0.15);
+  }
+
+  .concept-card-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .concept-card-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .concept-body {
+    padding: 22px 24px;
+  }
+
+  .concept-body p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+
+  .concept-body p:last-child { margin-bottom: 0; }
+
+  /* ─── Example block ─── */
+  .example-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    margin: 16px 0;
+  }
+
+  .example-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .example-block p {
+    font-size: 14px !important;
+    color: var(--text-muted) !important;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .example-block strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ─── How it works steps ─── */
+  .steps {
+    margin: 16px 0;
+    counter-reset: step;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    counter-increment: step;
+  }
+
+  .step-num {
+    width: 24px; height: 24px;
+    background: rgba(129,140,248,0.12);
+    border: 1px solid rgba(129,140,248,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step p {
+    font-size: 14px !important;
+    margin-bottom: 0 !important;
+    color: var(--text-muted) !important;
+  }
+
+  /* ─── Tags ─── */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .tag-green { background: rgba(6,78,59,0.4); color: #6ee7b7; border-color: rgba(110,231,183,0.2); }
+  .tag-blue  { background: rgba(30,27,75,0.5); color: #a5b4fc; border-color: rgba(165,180,252,0.2); }
+  .tag-pink  { background: rgba(74,13,46,0.4); color: #f9a8d4; border-color: rgba(249,168,212,0.2); }
+  .tag-amber { background: rgba(69,26,3,0.5);  color: #fcd34d; border-color: rgba(252,211,77,0.2); }
+
+  /* ─── Comparison table ─── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .compare-table th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(42,45,58,0.5);
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .compare-table td:first-child {
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  /* ─── Q&A Section ─── */
+  .qa-section {
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 40px;
+  }
+
+  .qa-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .qa-badge {
+    background: rgba(244,114,182,0.1);
+    border: 1px solid rgba(244,114,182,0.2);
+    color: var(--accent3);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .qa-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .qa-card:hover { border-color: rgba(244,114,182,0.3); }
+
+  .qa-question {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    user-select: none;
+  }
+
+  .qa-q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .qa-q-prefix {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    margin-right: 8px;
+  }
+
+  .qa-toggle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+
+  .qa-card.open .qa-toggle {
+    background: rgba(244,114,182,0.1);
+    border-color: rgba(244,114,182,0.3);
+    color: var(--accent3);
+    transform: rotate(45deg);
+  }
+
+  .qa-answer {
+    display: none;
+    padding: 0 20px 18px;
+    border-top: 1px solid var(--border);
+    background: rgba(14,15,20,0.4);
+  }
+
+  .qa-card.open .qa-answer { display: block; }
+
+  .qa-answer p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-top: 14px;
+    margin-bottom: 8px;
+  }
+
+  .qa-answer code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .qa-answer strong { color: var(--text); font-weight: 500; font-style: normal; }
+
+  /* ─── Navigation footer ─── */
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 0 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .nav-btn:hover { border-color: var(--accent2); color: var(--text); background: var(--surface2); }
+
+  .nav-btn.primary {
+    background: rgba(110,231,183,0.1);
+    border-color: rgba(110,231,183,0.3);
+    color: var(--accent);
+  }
+
+  .nav-btn.primary:hover { background: rgba(110,231,183,0.18); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+  .nav-center {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ─── Highlight box ─── */
+  .highlight-box {
+    background: rgba(129,140,248,0.06);
+    border: 1px solid rgba(129,140,248,0.18);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    margin: 16px 0;
+  }
+
+  .highlight-box .hl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .highlight-box p {
+    font-size: 14px !important;
+    color: var(--text-muted) !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* ─── Sub-section ─── */
+  .sub-section { margin: 28px 0; }
+
+  .sub-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sub-title::before {
+    content: '';
+    display: block;
+    width: 3px; height: 18px;
+    background: var(--accent2);
+    border-radius: 2px;
+  }
+
+  /* ─── Warning/tip ─── */
+  .tip-box {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.18);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin: 14px 0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .tip-icon { font-size: 16px; flex-shrink: 0; }
+
+  .tip-box p {
+    font-size: 13px !important;
+    color: #fcd34d !important;
+    margin: 0 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* ─── RAG Pipeline Animation ─── */
+  .rag-clip {
+    margin: 32px 0 0;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .rag-clip-label {
+    position: absolute;
+    top: 12px; left: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    z-index: 10;
+  }
+
+  .rag-clip canvas {
+    display: block;
+    width: 100%;
+    height: 180px;
+  }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 900px) {
+    .sidebar { width: 100%; height: auto; position: relative; }
+    .main { margin-left: 0; }
+    .hero, .sections-container { padding-left: 24px; padding-right: 24px; }
+    .hero-title { font-size: 28px; }
+    .app { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ─── Sidebar ─── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Interview Prep</div>
+    <div class="logo-title">RAG Masterclass</div>
+    <div class="logo-sub">8 sections · 40+ Q&As</div>
+  </div>
+  <div class="sidebar-progress">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="progress-text">0 / 8</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="nav-section-label">Concepts</div>
+  <a class="nav-item active" onclick="goTo(0)" data-id="0">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Intro to RAG</span>
+    <span class="nav-num">01</span>
+  </a>
+  <a class="nav-item" onclick="goTo(1)" data-id="1">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Query Translation</span>
+    <span class="nav-num">02</span>
+  </a>
+  <a class="nav-item" onclick="goTo(2)" data-id="2">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Chunking Strategies</span>
+    <span class="nav-num">03</span>
+  </a>
+  <a class="nav-item" onclick="goTo(3)" data-id="3">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Indexing</span>
+    <span class="nav-num">04</span>
+  </a>
+  <a class="nav-item" onclick="goTo(4)" data-id="4">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Routing & Query Construction</span>
+    <span class="nav-num">05</span>
+  </a>
+  <a class="nav-item" onclick="goTo(5)" data-id="5">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Post-Retrieval</span>
+    <span class="nav-num">06</span>
+  </a>
+  <a class="nav-item" onclick="goTo(6)" data-id="6">
+    <div class="nav-dot"></div>
+    <span class="nav-label">RAG Variants</span>
+    <span class="nav-num">07</span>
+  </a>
+  <a class="nav-item" onclick="goTo(7)" data-id="7">
+    <div class="nav-dot"></div>
+    <span class="nav-label">Evaluation & Metrics</span>
+    <span class="nav-num">08</span>
+  </a>
+</nav>
+
+<!-- ─── Main ─── -->
+<div class="main">
+  <div class="hero">
+    <div class="hero-eyebrow">Ready to interview</div>
+    <h1 class="hero-title">RAG Interview<br><span>Masterclass</span></h1>
+    <p class="hero-desc">Everything you need to ace RAG interviews — from chunking basics to advanced evaluation metrics. Read each section, understand the examples, then test yourself with the Q&As.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">8</span><span class="stat-label">sections</span></div>
+      <div class="stat"><span class="stat-num">40+</span><span class="stat-label">interview Q&As</span></div>
+      <div class="stat"><span class="stat-num">25+</span><span class="stat-label">concepts</span></div>
+    </div>
+
+    <!-- Animated RAG pipeline clip -->
+    <div class="rag-clip">
+      <div class="rag-clip-label">live — rag pipeline</div>
+      <canvas id="ragCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="sections-container">
+
+    <!-- ═══════════════ SECTION 0: Intro ═══════════════ -->
+    <div class="section active" id="section-0">
+      <div class="section-header">
+        <div class="section-num">Section 01 of 08</div>
+        <h2 class="section-title">Introduction to <span class="accent">RAG</span></h2>
+        <p class="section-intro">Retrieval-Augmented Generation combines the power of LLMs with external knowledge — the foundation of every modern AI app.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🧠</div>
+            <div>
+              <h3>What is RAG?</h3>
+              <p>The core idea</p>
+            </div>
+          </div>
+          <div class="concept-body">
+            <p>RAG stands for <strong>Retrieval-Augmented Generation</strong>. The idea is simple: instead of relying only on what an LLM memorized during training, we first <em>retrieve</em> relevant documents from an external knowledge base, then <em>augment</em> the prompt with those documents, and finally let the LLM <em>generate</em> an answer grounded in that context.</p>
+            <div class="example-block">
+              <div class="example-label">Simple analogy</div>
+              <p>Imagine an exam with open books. Without RAG, the student answers from memory alone. With RAG, the student first finds the relevant chapter, reads it, then writes the answer. The answer is more accurate and grounded.</p>
+            </div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p><strong>User query arrives</strong> — e.g., "What is our refund policy?"</p></div>
+              <div class="step"><div class="step-num">2</div><p><strong>Retrieve</strong> — search the knowledge base for relevant documents.</p></div>
+              <div class="step"><div class="step-num">3</div><p><strong>Augment</strong> — add retrieved docs to the prompt as context.</p></div>
+              <div class="step"><div class="step-num">4</div><p><strong>Generate</strong> — LLM produces a grounded, accurate answer.</p></div>
+            </div>
+            <div class="tags">
+              <span class="tag tag-green">Core concept</span>
+              <span class="tag tag-blue">Always asked</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">❓</div>
+            <div>
+              <h3>Why RAG over Fine-tuning?</h3>
+              <p>The key trade-off</p>
+            </div>
+          </div>
+          <div class="concept-body">
+            <p>Interviewers love this question. Both RAG and fine-tuning adapt LLMs to specific domains, but they solve different problems.</p>
+            <table class="compare-table">
+              <tr><th>Aspect</th><th>RAG</th><th>Fine-tuning</th></tr>
+              <tr><td>Knowledge update</td><td>Real-time — just update the DB</td><td>Need to retrain the model</td></tr>
+              <tr><td>Cost</td><td>Low — no GPU training needed</td><td>High — requires training runs</td></tr>
+              <tr><td>Hallucination</td><td>Lower — grounded in docs</td><td>Still possible</td></tr>
+              <tr><td>Best for</td><td>Factual Q&A, dynamic data</td><td>Style/tone/format adaptation</td></tr>
+            </table>
+            <div class="tip-box">
+              <span class="tip-icon">💡</span>
+              <p>In interviews, say: <em>"I'd use RAG when the knowledge needs to stay current or when we can't afford retraining. I'd fine-tune when I need the model to behave differently — e.g., adopt a persona or a specific output format."</em></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">⚠️</div>
+            <div>
+              <h3>Failure Modes of Naive RAG</h3>
+              <p>What goes wrong and why</p>
+            </div>
+          </div>
+          <div class="concept-body">
+            <p>Basic RAG (embed → retrieve → generate) has several well-known failure points. Understanding these is what separates mid-level from senior candidates.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p><strong>Poor retrieval</strong> — the wrong documents are fetched; the LLM answers from irrelevant context.</p></div>
+              <div class="step"><div class="step-num">2</div><p><strong>Chunking mismatch</strong> — chunks are too large (noise) or too small (missing context).</p></div>
+              <div class="step"><div class="step-num">3</div><p><strong>Lost in the middle</strong> — LLMs tend to ignore middle tokens in long contexts.</p></div>
+              <div class="step"><div class="step-num">4</div><p><strong>Semantic mismatch</strong> — user asks a question but docs contain declarative statements; cosine similarity fails.</p></div>
+              <div class="step"><div class="step-num">5</div><p><strong>No grounding verification</strong> — LLM ignores retrieved context and still hallucinates.</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Questions on RAG Basics</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> Explain RAG in one minute to a non-technical interviewer.</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Imagine you're a doctor who needs to answer a patient's question about a rare condition. You could either answer from memory (risky) or quickly look up the latest medical guidelines and then answer. RAG is the second approach — the LLM "looks up" relevant information from a database before answering. This makes answers more accurate, up-to-date, and verifiable.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> What are the three main components of a RAG pipeline?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>1. Indexing</strong> — documents are chunked, embedded into vectors, and stored in a vector database (e.g., Pinecone, ChromaDB, Weaviate).</p>
+            <p><strong>2. Retrieval</strong> — at query time, the query is embedded and the most similar chunks are retrieved using approximate nearest-neighbor (ANN) search.</p>
+            <p><strong>3. Generation</strong> — the retrieved chunks are injected into the LLM prompt as context, and the LLM generates the final answer.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> When would you NOT use RAG? What are its limitations?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>RAG is not ideal when: <strong>(a)</strong> the task requires deep reasoning that spans many documents and can't be captured in top-k chunks; <strong>(b)</strong> latency is critical — retrieval adds network + compute overhead; <strong>(c)</strong> your knowledge is fully static and small enough to fine-tune or fit in a system prompt; <strong>(d)</strong> you need the model to internalize a completely new format or behavior, not just factual knowledge.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q4.</span> What is the difference between RAG and a search engine?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>A search engine <strong>retrieves and ranks</strong> documents, returning links. RAG goes further — it retrieves documents and then <strong>synthesizes</strong> a natural language answer from them using an LLM. Search gives you "where to look"; RAG gives you the answer. Also, search uses keyword/BM25 matching while RAG typically uses semantic (vector) search.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" disabled>← Previous</button>
+        <span class="nav-center">Section 1 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(1)">Query Translation →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 1: Query Translation ═══════════════ -->
+    <div class="section" id="section-1">
+      <div class="section-header">
+        <div class="section-num">Section 02 of 08</div>
+        <h2 class="section-title">Query <span class="accent">Translation</span></h2>
+        <p class="section-intro">User queries are often ambiguous or poorly phrased. Query translation transforms them into better retrieval signals.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔄</div>
+            <div><h3>Multi-Query Approach</h3><p>Generate multiple retrieval queries from one user question</p></div>
+          </div>
+          <div class="concept-body">
+            <p>A single user query often misses relevant documents because it's phrased in a specific way. Multi-query generates <em>several reformulations</em> of the same question and retrieves documents for each, then deduplicates results.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>User:</strong> "How do I fix slow SQL queries?"<br><br>
+              <strong>Generated queries:</strong><br>
+              → "SQL query optimization techniques"<br>
+              → "Database performance tuning best practices"<br>
+              → "How to use query execution plans"<br>
+              → "Indexing strategies for faster database queries"</p>
+            </div>
+            <p>Each query retrieves different chunks. The union gives broader, more complete coverage. Great for complex questions.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">⚡</div>
+            <div><h3>RAG Fusion</h3><p>Combine multiple retrievals using Reciprocal Rank Fusion</p></div>
+          </div>
+          <div class="concept-body">
+            <p>RAG Fusion extends multi-query by using <strong>Reciprocal Rank Fusion (RRF)</strong> to merge and re-rank results from multiple retrieval runs into a single ranked list.</p>
+            <div class="example-block">
+              <div class="example-label">RRF formula</div>
+              <p>score(doc) = Σ 1 / (rank_in_list_i + k)<br><br>
+              A document ranked #1 in list A and #3 in list B scores higher than one ranked #5 in both. <strong>k</strong> is typically 60 (dampens extreme ranks).</p>
+            </div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Generate N sub-queries from the original.</p></div>
+              <div class="step"><div class="step-num">2</div><p>Retrieve top-k docs for each sub-query.</p></div>
+              <div class="step"><div class="step-num">3</div><p>Apply RRF to all retrieval lists → one ranked list.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Feed top results to the LLM.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🌿</div>
+            <div><h3>Decomposition</h3><p>Break complex questions into sub-questions</p></div>
+          </div>
+          <div class="concept-body">
+            <p>For multi-hop questions (questions that require connecting information from multiple places), decomposition breaks one big question into smaller, answerable sub-questions.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>Original:</strong> "What are the tax implications of selling RSUs if I'm based in California?"<br><br>
+              <strong>Decomposed into:</strong><br>
+              → "How are RSUs taxed federally in the US?"<br>
+              → "What is California state income tax on stock compensation?"<br>
+              → "What is the difference between RSU vesting and sale tax events?"</p>
+            </div>
+            <p>Each sub-question retrieves its own context. Answers are assembled bottom-up (sequential or parallel).</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🦢</div>
+            <div><h3>HyDE — Hypothetical Document Embeddings</h3><p>Generate a fake answer, embed it, retrieve with that</p></div>
+          </div>
+          <div class="concept-body">
+            <p>HyDE solves the <em>query-document semantic mismatch</em> problem. Queries are short questions; documents contain declarative answers. Their embeddings differ in vector space.</p>
+            <p><strong>Solution:</strong> Ask the LLM to hallucinate a plausible answer to the query. Embed that hypothetical answer, and use it to search the database — it lands closer to real documents than the original question embedding would.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>Query:</strong> "What is the boiling point of ethanol?"<br><br>
+              <strong>HyDE generates:</strong> "Ethanol (C2H5OH) has a boiling point of 78.37°C at standard atmospheric pressure…"<br><br>
+              <strong>This hypothetical doc</strong> embeds near actual chemistry docs even though the LLM made it up. Retrieval quality improves significantly.</p>
+            </div>
+            <div class="tags">
+              <span class="tag tag-amber">Clever technique</span>
+              <span class="tag tag-blue">Frequently asked</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔗</div>
+            <div><h3>IR-CoT — Interleaved Retrieval with Chain of Thought</h3><p>Retrieve → think → retrieve again</p></div>
+          </div>
+          <div class="concept-body">
+            <p>IR-CoT interleaves retrieval steps with reasoning steps. After each reasoning step, if the model realizes it needs more information, it triggers another retrieval. This is iterative and very powerful for complex multi-hop questions.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Retrieve initial context.</p></div>
+              <div class="step"><div class="step-num">2</div><p>LLM reasons one step (CoT).</p></div>
+              <div class="step"><div class="step-num">3</div><p>If more info is needed, new retrieval triggered.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Repeat until answer is reached.</p></div>
+            </div>
+            <div class="highlight-box">
+              <div class="hl-label">vs Adaptive RAG</div>
+              <p>IR-CoT always interleaves. Adaptive RAG decides <em>whether</em> to retrieve at all. IR-CoT is about the <em>how</em>; Adaptive RAG is about the <em>when</em>.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Query Translation Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> What problem does HyDE solve and when would you use it?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>HyDE solves the <strong>semantic gap between queries and documents</strong>. Queries are short and question-like; documents are long and declarative. Their vector representations are in different parts of embedding space, so cosine similarity between them is low even when they're semantically related.</p>
+            <p>HyDE generates a hypothetical answer and embeds that instead of the query. This works because the hypothetical answer is in the same "style" as real documents, so it retrieves more relevant chunks. Use it when your queries are very short/telegraphic and you notice retrieval quality is poor.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> How does RAG Fusion differ from simply running multi-query?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Multi-query retrieves documents for each sub-query and takes the union — but this loses ranking information. A document that appears #1 in three different query results is treated the same as one that appears once at #10.</p>
+            <p>RAG Fusion adds <strong>Reciprocal Rank Fusion (RRF)</strong> to merge the ranked lists intelligently. Documents that consistently rank high across multiple retrieval runs get a boosted score, giving a much better final ranking without needing expensive cross-encoder re-ranking.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> What is the risk of using HyDE and how do you mitigate it?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>The main risk is <strong>hallucination in the hypothetical document</strong>. If the LLM hallucinates a convincing but incorrect hypothetical answer, the embedding will point to wrong documents. For niche domains where the LLM has little training data, HyDE can actually hurt retrieval.</p>
+            <p>Mitigation: <strong>(1)</strong> Use HyDE only when your LLM has reasonable knowledge of the domain. <strong>(2)</strong> Run HyDE alongside standard query embedding and combine both retrieval results (ensemble approach). <strong>(3)</strong> Evaluate HyDE vs. baseline on your specific dataset before deploying.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q4.</span> Explain query decomposition with a real-world example.</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Say a user asks: <em>"Compare the revenue growth of Apple and Google in 2023 and explain what drove the difference."</em></p>
+            <p>This is a multi-hop question. Decomposed: <strong>(1)</strong> "Apple revenue growth 2023" → retrieve Apple financials. <strong>(2)</strong> "Google revenue growth 2023" → retrieve Alphabet reports. <strong>(3)</strong> "Key drivers of tech revenue growth 2023" → retrieve analysis. Then synthesize all three answers. Without decomposition, a single query might retrieve generic tech articles that don't answer either specific question well.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(0)">← Intro to RAG</button>
+        <span class="nav-center">Section 2 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(2)">Chunking →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 2: Chunking ═══════════════ -->
+    <div class="section" id="section-2">
+      <div class="section-header">
+        <div class="section-num">Section 03 of 08</div>
+        <h2 class="section-title">Chunking <span class="accent">Strategies</span></h2>
+        <p class="section-intro">Chunking is how you split documents before indexing. It's one of the most impactful and most overlooked decisions in a RAG pipeline.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">📏</div>
+            <div><h3>Fixed-Size Chunking</h3><p>Split by character/token count</p></div>
+          </div>
+          <div class="concept-body">
+            <p>The simplest strategy: split text every N characters or tokens, optionally with an overlap between consecutive chunks to preserve context at boundaries.</p>
+            <div class="example-block">
+              <div class="example-label">Example (chunk_size=100, overlap=20)</div>
+              <p>Document: "The cat sat on the mat. The dog ran away. The bird flew high."<br><br>
+              Chunk 1: "The cat sat on the mat. The dog ran away."<br>
+              Chunk 2: "The dog ran away. The bird flew high." ← overlap keeps context</p>
+            </div>
+            <p><strong>Pros:</strong> Simple, fast, predictable size. <strong>Cons:</strong> Blindly cuts mid-sentence, mid-thought, or mid-table. Overlap helps but doesn't eliminate the problem.</p>
+            <div class="tags"><span class="tag tag-green">Simple</span><span class="tag tag-amber">Context bleed</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔀</div>
+            <div><h3>Recursive Character Splitting</h3><p>Split on natural boundaries first</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Used by LangChain's <code>RecursiveCharacterTextSplitter</code>. It tries a hierarchy of separators in order: paragraphs (<code>\n\n</code>) → sentences (<code>\n</code>) → words (<code> </code>) → characters. Only moves to the finer level if chunks are still too large.</p>
+            <div class="example-block">
+              <div class="example-label">Priority order</div>
+              <p>1st try split on: <strong>\n\n</strong> (paragraphs)<br>
+              If still too big, split on: <strong>\n</strong> (lines)<br>
+              If still too big, split on: <strong>. </strong> (sentences)<br>
+              Last resort: split on: <strong>" "</strong> (words)</p>
+            </div>
+            <p>This preserves semantic units much better than fixed-size chunking. Almost always a better default.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🧬</div>
+            <div><h3>Semantic Chunking</h3><p>Split where meaning changes</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Embed every sentence. Then find points where the embedding distance between consecutive sentences spikes — these are topic boundaries. Chunk at those boundaries. Each chunk is semantically coherent.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Split document into individual sentences.</p></div>
+              <div class="step"><div class="step-num">2</div><p>Embed each sentence with an embedding model.</p></div>
+              <div class="step"><div class="step-num">3</div><p>Compute cosine distance between consecutive sentence embeddings.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Where distance > threshold, create a new chunk boundary.</p></div>
+            </div>
+            <p><strong>Pros:</strong> Chunks are topically coherent. <strong>Cons:</strong> More expensive — requires embedding every sentence during indexing.</p>
+            <div class="tags"><span class="tag tag-blue">Best quality</span><span class="tag tag-amber">Slower</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">📐</div>
+            <div><h3>Chunk Size Trade-offs</h3><p>The most important decision you'll make</p></div>
+          </div>
+          <div class="concept-body">
+            <table class="compare-table">
+              <tr><th>Chunk Size</th><th>Pros</th><th>Cons</th></tr>
+              <tr><td>Small (128–256 tokens)</td><td>Precise retrieval, less noise</td><td>Missing context, incomplete answers</td></tr>
+              <tr><td>Medium (512–1024 tokens)</td><td>Good balance</td><td>More noise than small</td></tr>
+              <tr><td>Large (2048+ tokens)</td><td>Full context preserved</td><td>Noisy, dilutes relevance signal</td></tr>
+            </table>
+            <div class="tip-box">
+              <span class="tip-icon">💡</span>
+              <p>In interviews, say: <em>"Chunk size is a hyperparameter I'd tune empirically. I'd start at 512 tokens with 10–20% overlap, measure retrieval precision/recall, then adjust."</em></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Chunking Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> How do you choose chunk size for a RAG pipeline?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>It depends on three factors: <strong>(1) Document type</strong> — legal docs need larger chunks (full clauses); FAQs work well with smaller ones. <strong>(2) LLM context window</strong> — you need to fit top-k chunks + prompt + answer in the window. <strong>(3) Query type</strong> — factual lookups need small precise chunks; analytical questions need larger context.</p>
+            <p>In practice, I'd start with 512–768 tokens and 15% overlap, evaluate retrieval quality using metrics like MRR and Context Recall, then tune.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> What is the "lost in the middle" problem and how does chunking affect it?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Research shows LLMs pay more attention to information at the <strong>beginning and end</strong> of the context window, and less to the middle. If you retrieve 10 chunks and inject them all, the chunks in positions 3–7 are often ignored.</p>
+            <p>Chunking affects this because smaller chunks mean more chunks to fill the same window — increasing the chance of relevant info landing in the middle. Solutions: use fewer but better chunks (better retrieval), re-rank so the best chunk is first, or use "long context" models less susceptible to this.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> How do you handle chunking for structured data like tables or code?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Standard text splitting destroys structure. For <strong>tables</strong>: keep each row or logical section as a single chunk and prepend the column headers; alternatively convert tables to natural language summaries. For <strong>code</strong>: use AST-aware splitting (split on function/class boundaries, not lines). For <strong>PDFs</strong>: use layout-aware parsers (PyMuPDF, Unstructured.io) that recognize headers, columns, and tables before chunking.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(1)">← Query Translation</button>
+        <span class="nav-center">Section 3 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(3)">Indexing →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 3: Indexing ═══════════════ -->
+    <div class="section" id="section-3">
+      <div class="section-header">
+        <div class="section-num">Section 04 of 08</div>
+        <h2 class="section-title">Indexing <span class="accent">Strategies</span></h2>
+        <p class="section-intro">Indexing determines how documents are stored and retrieved. The right indexing strategy can dramatically improve retrieval quality.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">📦</div>
+            <div><h3>Single Vector Embedding</h3><p>One vector per chunk</p></div>
+          </div>
+          <div class="concept-body">
+            <p>The baseline approach: embed each chunk into a single dense vector (e.g., 1536 dimensions with OpenAI's <code>text-embedding-3-small</code>). Store in a vector DB. At query time, embed the query and find the nearest vectors via cosine similarity or dot product.</p>
+            <div class="example-block">
+              <div class="example-label">How it works</div>
+              <p>Chunk → embedding model → [0.12, -0.45, 0.87, …] (1536 floats)<br>
+              Query → embedding model → [0.11, -0.43, 0.89, …]<br>
+              similarity = cosine(query_vec, chunk_vec) → 0.92 ✓</p>
+            </div>
+            <p><strong>Limitation:</strong> One vector must capture the entire meaning of a chunk. Long chunks lose nuance. A question about a detail in a 1000-token chunk may not retrieve well.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🗂️</div>
+            <div><h3>Multi-Vector Embedding</h3><p>Multiple representations per document</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Instead of one vector per chunk, generate multiple vectors for each document: the full chunk, a summary, individual key sentences, or hypothetical questions the chunk answers. Store all vectors but link them back to the original chunk. Retrieval finds any vector; you return the full chunk.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>For each chunk, generate: a summary embedding, a full-text embedding, and question embeddings.</p></div>
+              <div class="step"><div class="step-num">2</div><p>Store all embeddings in the vector DB, all pointing to the same chunk ID.</p></div>
+              <div class="step"><div class="step-num">3</div><p>A query matches any of these embeddings → retrieves the full chunk.</p></div>
+            </div>
+            <div class="tags"><span class="tag tag-green">Better recall</span><span class="tag tag-amber">More storage</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🌲</div>
+            <div><h3>RAPTOR — Recursive Abstractive Processing for Tree-Organized Retrieval</h3><p>Build a summary tree over your corpus</p></div>
+          </div>
+          <div class="concept-body">
+            <p>RAPTOR builds a hierarchical tree of summaries. Leaf nodes are raw chunks. Parent nodes are LLM-generated summaries of clusters of leaves. The root is a summary of everything. Retrieval happens at all levels simultaneously.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Embed all chunks. Cluster similar chunks (e.g., k-means on embeddings).</p></div>
+              <div class="step"><div class="step-num">2</div><p>LLM summarizes each cluster → new "parent" nodes.</p></div>
+              <div class="step"><div class="step-num">3</div><p>Repeat clustering+summarizing on parent nodes until root.</p></div>
+              <div class="step"><div class="step-num">4</div><p>At query time, search across all levels — get both high-level and fine-grained results.</p></div>
+            </div>
+            <div class="highlight-box">
+              <div class="hl-label">Why RAPTOR helps</div>
+              <p>Questions like "give me a company overview" benefit from high-level summaries. Questions like "what is the Q3 revenue?" need leaf-level detail. RAPTOR handles both.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🎯</div>
+            <div><h3>ColBERT — Contextualized Late Interaction over BERT</h3><p>Token-level matching for precise retrieval</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Standard dense retrieval compresses a document into one vector — losing fine-grained token information. ColBERT keeps a vector for <em>every token</em> in the document, and scores query-document similarity using the <strong>MaxSim</strong> operator: for each query token, find its most similar document token, then sum those max scores.</p>
+            <div class="example-block">
+              <div class="example-label">MaxSim scoring</div>
+              <p>Query tokens: ["what", "is", "dropout"]<br>
+              For "dropout" → find most similar doc token → "regularization" (score 0.91)<br>
+              For "what" → "definition" (score 0.82)<br>
+              Total score = sum of max similarities</p>
+            </div>
+            <p>ColBERT achieves near cross-encoder accuracy with near bi-encoder speed. Downside: storage is much larger (one vector per token per doc).</p>
+            <div class="tags"><span class="tag tag-blue">High accuracy</span><span class="tag tag-pink">More storage</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔀</div>
+            <div><h3>Hybrid Search — Dense + Sparse (BM25)</h3><p>Combine semantic and keyword search</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Dense retrieval excels at semantic matching but misses exact keyword matches. BM25 (a TF-IDF variant) excels at keyword matching but fails for paraphrases. Hybrid search combines both.</p>
+            <table class="compare-table">
+              <tr><th></th><th>Dense (Embeddings)</th><th>Sparse (BM25)</th></tr>
+              <tr><td>Strength</td><td>Semantic similarity</td><td>Exact keyword match</td></tr>
+              <tr><td>Example</td><td>"car" matches "automobile"</td><td>"GPT-4" matches "GPT-4" exactly</td></tr>
+              <tr><td>Fails on</td><td>Rare terms, product codes</td><td>Paraphrases, synonyms</td></tr>
+            </table>
+            <p>Hybrid scoring: <code>score = α × dense_score + (1-α) × bm25_score</code>. Tune α on your dataset. Most production RAG systems use hybrid search.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Indexing Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> What is the difference between bi-encoder and cross-encoder retrieval?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>A <strong>bi-encoder</strong> embeds the query and document independently into vectors, then computes similarity with a dot product. This is fast because document vectors are precomputed and stored — you only embed the query at runtime. But it's less accurate because query and document never "see" each other during encoding.</p>
+            <p>A <strong>cross-encoder</strong> takes the query+document concatenated as a single input, letting the model attend across both simultaneously. This is much more accurate but slow — you can't precompute scores. In practice: use bi-encoders (dense retrieval) for candidate retrieval, then cross-encoders for re-ranking the top candidates.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> Why is hybrid search better than pure dense retrieval?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Pure dense retrieval fails on <strong>rare terms and exact matches</strong>. If a user queries "CVE-2024-12345" or "SK-U7729-B", there's no meaningful semantic neighborhood for these. The embedding model was never trained on them. BM25 handles these perfectly with exact matching.</p>
+            <p>Hybrid also handles <strong>domain-specific jargon</strong> better. A medical query for "BRCA1 mutation" might embed near general biology terms, missing the exact BRCA1 papers. BM25 finds exact matches immediately. Studies show hybrid consistently outperforms either alone by 5–15% on standard benchmarks.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> Explain RAPTOR and when you'd use it over standard flat indexing.</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Use RAPTOR when your corpus has documents covering <strong>different levels of abstraction</strong>, and your users ask both high-level ("give me an overview of X") and detail-level ("what was the Q3 margin?") questions. Flat indexing with raw chunks can't answer the high-level question well — no single chunk has the overview. RAPTOR's parent nodes (summaries) handle that.</p>
+            <p>The cost is extra LLM calls and storage during indexing. Worth it for long documents, books, annual reports, or large wikis.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(2)">← Chunking</button>
+        <span class="nav-center">Section 4 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(4)">Routing & Query Construction →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 4: Routing & Query Construction ═══════════════ -->
+    <div class="section" id="section-4">
+      <div class="section-header">
+        <div class="section-num">Section 05 of 08</div>
+        <h2 class="section-title">Routing & Query <span class="accent">Construction</span></h2>
+        <p class="section-intro">Routing decides where to send a query. Query construction transforms natural language into the right retrieval format for the target data source.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🚦</div>
+            <div><h3>Logical Routing</h3><p>Rule-based or LLM-classified routing</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Logical routing uses an LLM (or a classifier) to inspect the query and decide which data source or knowledge base to query. Think of it as an intelligent dispatcher.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p>Query: "What is our HR leave policy?" → route to HR docs DB<br>
+              Query: "How do I reset my password?" → route to IT support KB<br>
+              Query: "SELECT * FROM orders WHERE..." → route to SQL tool<br><br>
+              The router uses a small, fast LLM to classify first, then sends the query to the right retriever.</p>
+            </div>
+            <div class="tags"><span class="tag tag-green">Simple</span><span class="tag tag-blue">Multi-source</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🧭</div>
+            <div><h3>Semantic Routing</h3><p>Embed the query, find the best data source by similarity</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Each data source is described by a set of "representative" texts or example queries. These are embedded and stored. At runtime, embed the user query and find the data source whose example embeddings are closest.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p>DB 1 description: "questions about financial statements, revenue, profit, balance sheet"<br>
+              DB 2 description: "questions about product features, tutorials, how-to guides"<br><br>
+              Query: "What was the net margin in Q4?" → embeds closer to DB 1's examples → route to finance DB</p>
+            </div>
+            <p>No LLM needed for routing — just embedding similarity. Faster and cheaper than logical routing, but less flexible.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🏗️</div>
+            <div><h3>Query Construction — Self-Query / Metadata Filtering</h3><p>Convert natural language into structured filters</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Vector search retrieves by semantic similarity, but sometimes the user specifies exact constraints: date ranges, authors, document types, etc. Self-querying extracts these constraints from the query and converts them into structured metadata filters + a refined semantic query.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>User query:</strong> "Show me papers about transformers published after 2022 by researchers at Google"<br><br>
+              <strong>Extracted:</strong><br>
+              semantic_query = "transformer architecture papers"<br>
+              filters = { year: { "$gt": 2022 }, affiliation: "Google" }<br><br>
+              Vector DB is queried with BOTH the semantic query AND the filters applied simultaneously.</p>
+            </div>
+            <div class="tags"><span class="tag tag-blue">Structured + semantic</span><span class="tag tag-green">High precision</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🗄️</div>
+            <div><h3>Text-to-SQL</h3><p>Turn natural language into database queries</p></div>
+          </div>
+          <div class="concept-body">
+            <p>When the data source is a relational database (not a vector DB), query construction means generating a SQL query from natural language. The LLM receives the schema + the question, and outputs valid SQL.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>Schema:</strong> orders(id, customer_id, amount, date, status)<br>
+              <strong>Query:</strong> "How many orders were placed last month worth over $500?"<br><br>
+              <strong>Generated SQL:</strong><br>
+              SELECT COUNT(*) FROM orders<br>
+              WHERE date >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')<br>
+              AND amount > 500</p>
+            </div>
+            <p>This is commonly used in agentic RAG systems where the agent decides whether to query a vector DB, a SQL DB, or an API.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Routing & Query Construction</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> How would you design a RAG system that handles both SQL databases and document stores?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Use a <strong>router + query constructor</strong> pattern. First, classify the query with a router: "Is this a structured data question (SQL) or an unstructured document question (vector search)?" For SQL questions, use an LLM with the database schema to generate SQL. For document questions, run standard vector search. For hybrid questions, run both and combine results before generation.</p>
+            <p>In practice, I'd implement this as an agent with tools: a <code>sql_search</code> tool, a <code>vector_search</code> tool, and let the LLM decide which to call. This is the basis of modern agentic RAG.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> What is the difference between logical and semantic routing? When do you use each?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Logical routing</strong> uses an LLM to classify the intent and pick a route. It's more flexible — you can write complex routing rules in the prompt, handle edge cases, and explain decisions. Use it when the routing logic is complex or when data sources are very different.</p>
+            <p><strong>Semantic routing</strong> uses embedding similarity — no LLM call needed for routing. Use it when you have well-defined, distinct data sources and latency matters. It's faster and cheaper but can't handle ambiguous cases as gracefully.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(3)">← Indexing</button>
+        <span class="nav-center">Section 5 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(5)">Post-Retrieval →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 5: Post-Retrieval ═══════════════ -->
+    <div class="section" id="section-5">
+      <div class="section-header">
+        <div class="section-num">Section 06 of 08</div>
+        <h2 class="section-title">Post-<span class="accent">Retrieval</span></h2>
+        <p class="section-intro">You've retrieved documents — but are they the right ones, in the right order? Post-retrieval is about refining what goes into the LLM prompt.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">📊</div>
+            <div><h3>Re-ranking with Cross-Encoders</h3><p>Score query+document pairs for precision</p></div>
+          </div>
+          <div class="concept-body">
+            <p>After retrieving top-k candidates via fast bi-encoder search, a cross-encoder re-ranks them. It takes (query, document) pairs and outputs a relevance score. Much more accurate than cosine similarity but too slow for initial retrieval.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Dense retrieval fetches top-50 candidates (fast).</p></div>
+              <div class="step"><div class="step-num">2</div><p>Cross-encoder scores all 50 (query, doc) pairs.</p></div>
+              <div class="step"><div class="step-num">3</div><p>Re-rank by cross-encoder score. Take top-5.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Feed these 5 highly-relevant chunks to LLM.</p></div>
+            </div>
+            <p>Popular cross-encoders: <code>ms-marco-MiniLM-L-12-v2</code>, Cohere Rerank API, Jina Reranker.</p>
+            <div class="tags"><span class="tag tag-blue">High precision</span><span class="tag tag-amber">Added latency</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">✂️</div>
+            <div><h3>Contextual Compression</h3><p>Extract only the relevant part of each chunk</p></div>
+          </div>
+          <div class="concept-body">
+            <p>A retrieved chunk might be 500 tokens, but only 2 sentences are actually relevant to the query. Contextual compression passes each chunk through an LLM extractor that extracts only the relevant sentences, reducing noise and token cost.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>Retrieved chunk:</strong> "The company was founded in 2010. It operates in 40 countries. <strong>The return policy allows 30 days for all products.</strong> Our CEO is John Smith. Revenue in 2023 was $4B."<br><br>
+              <strong>Query:</strong> "What is the return policy?"<br>
+              <strong>After compression:</strong> "The return policy allows 30 days for all products."</p>
+            </div>
+            <p>Dramatically reduces the context window usage. Especially useful when chunks are large or loosely structured.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔎</div>
+            <div><h3>LLM-based Relevance Filtering</h3><p>Ask the LLM: "Is this relevant?"</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Before injecting retrieved chunks into the final prompt, pass each one through a fast LLM filter with the question: "Is the following document relevant to the query: [query]? Answer yes or no." Discard chunks that say no.</p>
+            <div class="highlight-box">
+              <div class="hl-label">When to use</div>
+              <p>Use when you notice the LLM is being distracted by irrelevant context ("garbage in, garbage out"). This adds latency but can significantly improve faithfulness scores. A small, fast model (like GPT-4o-mini) works fine for filtering.</p>
+            </div>
+            <div class="tags"><span class="tag tag-green">Reduces noise</span><span class="tag tag-amber">Extra LLM call</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Post-Retrieval Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> When would you use a re-ranker vs. just increasing k in retrieval?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Increasing k gets you more candidates but doesn't improve their order or relevance quality. If the top-1 result is wrong, adding more candidates doesn't fix that — it just adds noise. A re-ranker fundamentally reorders results based on a more powerful relevance signal.</p>
+            <p>Use a re-ranker when: <strong>(a)</strong> retrieval quality is the bottleneck (correct docs are in top-50 but not top-5); <strong>(b)</strong> you can afford ~100–200ms extra latency; <strong>(c)</strong> the queries are complex or ambiguous. If latency is tight, try increasing k first, and only add a re-ranker if metrics still aren't good enough.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> What is "context stuffing" and why is it a bad idea?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Context stuffing is retrieving a large k (e.g., top-20) and injecting all chunks into the prompt, thinking "more context = better answer." This has several downsides: <strong>(1)</strong> Token cost increases linearly with k. <strong>(2)</strong> "Lost in the middle" — LLMs ignore context in the middle of a long prompt. <strong>(3)</strong> Irrelevant chunks actively confuse the LLM (dilution effect — shown in studies to reduce accuracy). <strong>(4)</strong> Exceeds context window limits.</p>
+            <p>Best practice: retrieve top-20 as candidates, re-rank, compress, and inject only the top 3–5 highest-quality chunks.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(4)">← Routing</button>
+        <span class="nav-center">Section 6 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(6)">RAG Variants →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 6: RAG Variants ═══════════════ -->
+    <div class="section" id="section-6">
+      <div class="section-header">
+        <div class="section-num">Section 07 of 08</div>
+        <h2 class="section-title">Advanced RAG <span class="accent">Variants</span></h2>
+        <p class="section-intro">Beyond basic RAG: adaptive, corrective, self-reflective, and modular approaches that handle real-world complexity.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🎛️</div>
+            <div><h3>Adaptive RAG</h3><p>Decide whether to retrieve at all</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Not every query needs retrieval. Adaptive RAG classifies queries before processing and routes them to: <strong>(a)</strong> direct LLM answer (simple factual or conversational), <strong>(b)</strong> single-step RAG, or <strong>(c)</strong> multi-step RAG (for complex queries). This saves cost and latency for simple questions.</p>
+            <div class="example-block">
+              <div class="example-label">Decision tree</div>
+              <p>"What's 2+2?" → no retrieval needed → LLM answers directly<br>
+              "What is our refund policy?" → single-step RAG → retrieve → answer<br>
+              "Compare our pricing vs competitors and suggest strategy" → multi-step RAG → decompose → iterative retrieval</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔁</div>
+            <div><h3>Self-RAG</h3><p>The LLM critiques its own retrieval and generation</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Self-RAG trains the LLM to generate special <strong>reflection tokens</strong> that evaluate its own outputs. These tokens decide: should I retrieve? Is this retrieved doc relevant? Is my answer supported by context? Is my answer complete?</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p><code>[Retrieve]</code> token — LLM decides if retrieval is needed.</p></div>
+              <div class="step"><div class="step-num">2</div><p><code>[ISREL]</code> token — Is retrieved doc relevant? (yes/no)</p></div>
+              <div class="step"><div class="step-num">3</div><p><code>[ISSUP]</code> token — Is my answer supported by the doc? (yes/no)</p></div>
+              <div class="step"><div class="step-num">4</div><p><code>[ISUSE]</code> token — Is my answer useful? (score 1–5)</p></div>
+            </div>
+            <div class="highlight-box">
+              <div class="hl-label">Key insight</div>
+              <p>Self-RAG doesn't use a separate grader model — the same LLM both generates and evaluates. This requires fine-tuning on special reflection token data.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">✅</div>
+            <div><h3>Corrective RAG (CRAG)</h3><p>Detect bad retrieval and fall back to web search</p></div>
+          </div>
+          <div class="concept-body">
+            <p>CRAG adds a <strong>retrieval evaluator</strong> that scores how relevant the retrieved documents are. If the score is low (retrieval was poor), it falls back to web search to get better documents. If retrieval is good, it proceeds normally.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Retrieve from vector DB as usual.</p></div>
+              <div class="step"><div class="step-num">2</div><p>Evaluator scores relevance: CORRECT / INCORRECT / AMBIGUOUS.</p></div>
+              <div class="step"><div class="step-num">3</div><p>CORRECT → proceed. INCORRECT → fall back to web search. AMBIGUOUS → combine both.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Decompose web-retrieved results → filter → refine → generate.</p></div>
+            </div>
+            <div class="tags"><span class="tag tag-green">Robust</span><span class="tag tag-blue">Fallback</span></div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🧩</div>
+            <div><h3>Modular RAG</h3><p>Build RAG as composable modules</p></div>
+          </div>
+          <div class="concept-body">
+            <p>Modular RAG treats each component (retriever, router, re-ranker, generator, memory) as an independent, swappable module. This allows flexible pipeline configurations: sequential, branching, looping, or conditional.</p>
+            <div class="example-block">
+              <div class="example-label">Module examples</div>
+              <p><strong>Search module:</strong> web, vector DB, SQL, APIs<br>
+              <strong>Memory module:</strong> short-term (conversation), long-term (user profile)<br>
+              <strong>Fusion module:</strong> merge results from multiple retrievers<br>
+              <strong>Predict module:</strong> generates a sub-query or hypothesis<br>
+              <strong>Task adaptor:</strong> adapts output format per use case</p>
+            </div>
+            <p>This is the framework behind LangGraph, LlamaIndex workflows, and most production agentic RAG systems.</p>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🤖</div>
+            <div><h3>Agentic RAG</h3><p>The LLM drives the entire retrieval strategy</p></div>
+          </div>
+          <div class="concept-body">
+            <p>In Agentic RAG, the LLM acts as an <em>agent</em> with retrieval tools. It decides <em>what</em> to retrieve, <em>when</em>, <em>how many times</em>, and <em>from where</em>. This enables dynamic, multi-hop, and self-correcting retrieval strategies without hard-coded pipelines.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p>Agent receives the query and a set of tools (vector search, SQL, web, calculator).</p></div>
+              <div class="step"><div class="step-num">2</div><p>Agent plans: "I need to first look up X, then compute Y."</p></div>
+              <div class="step"><div class="step-num">3</div><p>Agent calls tools iteratively, reading results after each call.</p></div>
+              <div class="step"><div class="step-num">4</div><p>Once enough context is gathered, agent generates the final answer.</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">RAG Variants Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> Compare Self-RAG and Corrective RAG. When would you use each?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Self-RAG</strong> is a fine-tuned model that adds self-reflection tokens during generation. It requires retraining the LLM and is deeply integrated into the generation process. Best when you own the model and can fine-tune it, and you need inference-time control at the token level.</p>
+            <p><strong>CRAG</strong> is a pipeline-level technique that adds a separate evaluator and web-search fallback. No fine-tuning needed — works with any LLM via prompting. Best for production systems where you want to handle retrieval failure gracefully without modifying the LLM itself. CRAG is much more practical for most teams.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> What are the risks of agentic RAG and how do you handle them?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>1. Infinite loops</strong> — the agent keeps retrieving without converging. Mitigation: set a max_iterations limit and a stopping criterion ("I have enough information to answer").</p>
+            <p><strong>2. Tool misuse</strong> — agent calls the wrong tool or uses it incorrectly. Mitigation: clear tool descriptions, few-shot examples in the system prompt, input validation on tools.</p>
+            <p><strong>3. Latency</strong> — each tool call adds round-trip time. Mitigation: parallelize tool calls when independent, use fast retrieval (ANN + cache), set timeouts.</p>
+            <p><strong>4. Cost</strong> — many LLM calls per query. Mitigation: route simple queries to non-agentic path, use smaller models for planning steps.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> What is the difference between Active RAG and Adaptive RAG?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Adaptive RAG</strong> focuses on the <em>when</em> — it decides upfront whether to retrieve, and if so, whether to do simple or complex retrieval. The routing decision happens once, before processing.</p>
+            <p><strong>Active RAG</strong> focuses on <em>dynamic, iterative retrieval</em> — retrieval is triggered <em>during</em> generation whenever the model needs more information. It's more similar to IR-CoT: the model actively decides to retrieve mid-generation based on its current state of reasoning. Active RAG is more general; Adaptive RAG is specifically about routing the query complexity.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(5)">← Post-Retrieval</button>
+        <span class="nav-center">Section 7 of 8</span>
+        <button class="nav-btn primary" onclick="goTo(7)">Evaluation →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 7: Evaluation ═══════════════ -->
+    <div class="section" id="section-7">
+      <div class="section-header">
+        <div class="section-num">Section 08 of 08</div>
+        <h2 class="section-title">Evaluation & <span class="accent">Metrics</span></h2>
+        <p class="section-intro">How do you know your RAG pipeline is working? This section is critical for senior roles and often separates candidates.</p>
+      </div>
+
+      <div class="concept-grid">
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">📐</div>
+            <div><h3>RAGAS Framework</h3><p>The standard evaluation framework for RAG</p></div>
+          </div>
+          <div class="concept-body">
+            <p>RAGAS (RAG Assessment) is the go-to framework for evaluating RAG pipelines without requiring human labels. It evaluates four dimensions, each with a score from 0 to 1.</p>
+            <table class="compare-table">
+              <tr><th>Metric</th><th>What it measures</th><th>Formula idea</th></tr>
+              <tr><td>Faithfulness</td><td>Are claims in the answer supported by context?</td><td>Claims verified by context / total claims</td></tr>
+              <tr><td>Answer Relevance</td><td>Does the answer address the question?</td><td>Similarity of generated questions back to original</td></tr>
+              <tr><td>Context Recall</td><td>Did retrieval find all relevant info?</td><td>Ground truth statements found in context / total</td></tr>
+              <tr><td>Context Precision</td><td>Are retrieved docs actually relevant?</td><td>Relevant retrieved / total retrieved</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🏆</div>
+            <div><h3>Retrieval Metrics — MRR and NDCG</h3><p>Measuring ranking quality</p></div>
+          </div>
+          <div class="concept-body">
+            <p>These information-retrieval metrics measure how well the retrieval system ranks documents — independent of generation quality.</p>
+            <div class="example-block">
+              <div class="example-label">MRR — Mean Reciprocal Rank</div>
+              <p>For each query, find the rank of the first relevant doc.<br>
+              If it's rank 1: score = 1.0<br>
+              If it's rank 2: score = 0.5<br>
+              If it's rank 5: score = 0.2<br>
+              MRR = average of these reciprocal ranks across all queries.</p>
+            </div>
+            <div class="example-block">
+              <div class="example-label">NDCG — Normalized Discounted Cumulative Gain</div>
+              <p>Like MRR but handles graded relevance (relevant, very relevant, perfect). Documents ranked higher count more. Perfect ranking = NDCG of 1.0. Commonly used as NDCG@10 (top 10 results).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🧪</div>
+            <div><h3>End-to-End vs Component Evaluation</h3><p>Where is the pipeline failing?</p></div>
+          </div>
+          <div class="concept-body">
+            <p>A RAG pipeline can fail in different places. You need to evaluate each component to pinpoint the issue.</p>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><p><strong>Retrieval quality:</strong> MRR, NDCG, Context Recall/Precision. "Are we retrieving the right docs?"</p></div>
+              <div class="step"><div class="step-num">2</div><p><strong>Generation quality:</strong> Faithfulness, Answer Relevance. "Is the LLM using the context correctly?"</p></div>
+              <div class="step"><div class="step-num">3</div><p><strong>End-to-end:</strong> RAGAS score, human eval, task-specific accuracy. "Does the full system answer correctly?"</p></div>
+            </div>
+            <div class="tip-box">
+              <span class="tip-icon">💡</span>
+              <p>Interview tip: say <em>"I'd first isolate whether it's a retrieval problem or a generation problem by evaluating them separately. Low context recall = fix retrieval. Low faithfulness = fix prompting or post-retrieval."</em></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-card">
+          <div class="concept-card-header">
+            <div class="concept-icon">🔬</div>
+            <div><h3>Faithfulness vs Hallucination</h3><p>The most important safety metric</p></div>
+          </div>
+          <div class="concept-body">
+            <p><strong>Faithfulness</strong> measures whether every claim in the generated answer is grounded in the retrieved context. A low faithfulness score means the LLM is making things up — <em>hallucinating</em> — even though it has context to work with.</p>
+            <div class="example-block">
+              <div class="example-label">Example</div>
+              <p><strong>Context:</strong> "The company was founded in 2010 and has 500 employees."<br>
+              <strong>Generated answer:</strong> "The company was founded in 2010, has 500 employees, and went public in 2018."<br><br>
+              "Went public in 2018" is NOT in the context → faithfulness violation → hallucination.</p>
+            </div>
+            <p>RAGAS computes faithfulness by breaking the answer into claims, then verifying each claim against the context using an LLM judge.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-header">
+          <span class="qa-badge">Interview Q&A</span>
+          <span class="qa-title">Evaluation Questions</span>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q1.</span> How do you evaluate a RAG pipeline without human-labeled data?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Use <strong>LLM-as-judge</strong> frameworks like RAGAS. These use a powerful LLM (like GPT-4) to evaluate the pipeline's outputs automatically. For each query, RAGAS scores: faithfulness (are claims grounded?), answer relevance (does it answer the question?), context recall (did we retrieve the right docs?), and context precision (were retrieved docs relevant?).</p>
+            <p>You can also generate synthetic QA pairs from your documents using an LLM — these become your evaluation dataset. This is called <strong>synthetic data generation for RAG evaluation</strong> and is a common interview topic.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q2.</span> Your RAG system has high context recall but low faithfulness. What's the issue?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>High context recall means retrieval is working — the right documents are being retrieved. Low faithfulness means the LLM is <strong>not using the retrieved context correctly</strong> — it's generating claims not supported by the context (hallucinating on top of good context).</p>
+            <p>Fixes: <strong>(1)</strong> Strengthen the system prompt: "Answer ONLY based on the provided context. Do not use prior knowledge." <strong>(2)</strong> Add a faithfulness check post-generation and re-generate if score is low. <strong>(3)</strong> Reduce the number of chunks — if there are 10 chunks, the LLM may ignore some and "fill in" from memory. <strong>(4)</strong> Use a model less prone to hallucination.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q3.</span> What is the difference between context recall and context precision?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p>Think of them like precision/recall in classification. <strong>Context recall</strong>: of all the information needed to answer the question (ground truth), how much was actually retrieved? Low recall means you missed important docs. <strong>Context precision</strong>: of all the documents you retrieved, how many were actually relevant? Low precision means you retrieved a lot of noise.</p>
+            <p>You want both high. Low recall → user gets incomplete answers. Low precision → LLM is distracted by irrelevant chunks, which hurts faithfulness.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q4.</span> How would you set up a RAG evaluation pipeline in production?</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Step 1 — Create a golden dataset:</strong> 50–100 representative queries with expected answers and relevant document IDs (manually curated or LLM-generated).</p>
+            <p><strong>Step 2 — Automate evaluation:</strong> Run RAGAS or a custom LLM judge on every deployment. Track faithfulness, context recall, answer relevance over time.</p>
+            <p><strong>Step 3 — Monitor in production:</strong> Log queries, retrieved chunks, and generated answers. Sample 1–5% for human review. Track user feedback signals (thumbs up/down, follow-up queries indicating dissatisfaction).</p>
+            <p><strong>Step 4 — Regression testing:</strong> Before deploying a new embedding model or chunking strategy, run the golden dataset and compare scores to the baseline. Never deploy a change that degrades RAGAS scores without understanding why.</p>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <span class="qa-q-text"><span class="qa-q-prefix">Q5.</span> Walk me through how you'd improve a RAG pipeline that gives wrong answers 30% of the time.</span>
+            <div class="qa-toggle">+</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>First, diagnose:</strong> Are wrong answers due to retrieval failure or generation failure? Run component-level eval. Check context recall — if the right docs aren't being retrieved, fix retrieval. Check faithfulness — if docs are retrieved but answer is wrong, fix generation.</p>
+            <p><strong>If retrieval is the issue:</strong> Try hybrid search, HyDE, multi-query, better embeddings, or adjust chunk size. <strong>If generation is the issue:</strong> Improve system prompt, add contextual compression, add a faithfulness verifier, or try a stronger LLM.</p>
+            <p><strong>Also check:</strong> Are the 30% wrong answers on a specific document type, query type, or topic? Pattern analysis often reveals a targeted fix (e.g., "all wrong answers involve tables → fix table chunking").</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <button class="nav-btn" onclick="goTo(6)">← RAG Variants</button>
+        <span class="nav-center">Section 8 of 8 — Complete!</span>
+        <button class="nav-btn primary" onclick="goTo(0)">↩ Back to Start</button>
+      </div>
+    </div>
+
+  </div><!-- end sections-container -->
+</div><!-- end main -->
+</div><!-- end app -->
+
+<script>
+  const TOTAL = 8;
+  let current = 0;
+  const visited = new Set([0]);
+
+  function goTo(idx) {
+    document.getElementById('section-' + current).classList.remove('active');
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    current = idx;
+    visited.add(idx);
+    document.getElementById('section-' + idx).classList.add('active');
+    document.querySelector('.nav-item[data-id="' + idx + '"]').classList.add('active');
+    updateNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateNav() {
+    document.querySelectorAll('.nav-item').forEach(el => {
+      const id = parseInt(el.getAttribute('data-id'));
+      el.classList.toggle('done', visited.has(id) && id !== current);
+    });
+    const pct = Math.round((visited.size / TOTAL) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = visited.size + ' / ' + TOTAL;
+  }
+
+  function toggleQA(el) {
+    const card = el.parentElement;
+    card.classList.toggle('open');
+  }
+
+  updateNav();
+</script>
+
+<!-- ═══════════ RAG PIPELINE ANIMATION ═══════════ -->
+<script>
+(function() {
+  const canvas = document.getElementById('ragCanvas');
+  const container = canvas.parentElement;
+
+  function resize() {
+    canvas.width  = container.clientWidth;
+    canvas.height = 180;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); });
+
+  const ctx = canvas.getContext('2d');
+
+  /* ── palette ── */
+  const C = {
+    bg:      '#0e0f14',
+    surface: '#16181f',
+    border:  '#2a2d3a',
+    green:   '#6ee7b7',
+    purple:  '#818cf8',
+    pink:    '#f472b6',
+    amber:   '#fbbf24',
+    muted:   '#4a4e63',
+    text:    '#e2e4ed',
+    textDim: '#7b7f96',
+  };
+
+  /* ── stage definitions ── */
+  const STAGES = [
+    { id: 'docs',    label: 'Documents',  sub: 'raw corpus',      color: C.purple },
+    { id: 'chunk',   label: 'Chunks',     sub: 'split & overlap', color: C.amber  },
+    { id: 'index',   label: 'Vectors',    sub: 'embed & index',   color: C.green  },
+    { id: 'query',   label: 'Query',      sub: 'user question',   color: C.pink   },
+    { id: 'retrieve',label: 'Retrieve',   sub: 'top-k match',     color: C.green  },
+    { id: 'llm',     label: 'LLM',        sub: 'generate',        color: C.purple },
+    { id: 'answer',  label: 'Answer',     sub: 'grounded output', color: C.amber  },
+  ];
+
+  /* ── particles travelling along pipeline ── */
+  const particles = [];
+  let tick = 0;
+
+  function spawnParticle(stageIdx) {
+    particles.push({
+      stage:    stageIdx,
+      nextStage: stageIdx + 1,
+      t:        0,          // 0..1 progress between stage → nextStage
+      speed:    0.008 + Math.random() * 0.006,
+      size:     2.5 + Math.random() * 2,
+      color:    STAGES[stageIdx].color,
+      alpha:    0,
+      trail:    [],
+    });
+  }
+
+  /* ── floating document rectangles around "docs" stage ── */
+  const floaters = Array.from({ length: 5 }, (_, i) => ({
+    offsetX: (Math.random() - 0.5) * 24,
+    offsetY: (Math.random() - 0.5) * 20,
+    phase:   Math.random() * Math.PI * 2,
+    speed:   0.4 + Math.random() * 0.6,
+    w: 14 + Math.random() * 10,
+    h: 18 + Math.random() * 8,
+  }));
+
+  /* ── pulse rings on active stage ── */
+  let pulseStage = 0;
+  let pulseR = 0;
+  let pulseAlpha = 0;
+
+  function getStageX(i, W) {
+    const pad = 72;
+    return pad + (i / (STAGES.length - 1)) * (W - pad * 2);
+  }
+
+  const CY = 90; // vertical center
+
+  /* ───── DRAW ───── */
+  function draw() {
+    const W = canvas.width;
+    const H = canvas.height;
+    tick++;
+
+    ctx.clearRect(0, 0, W, H);
+
+    /* subtle grid */
+    ctx.strokeStyle = 'rgba(42,45,58,0.4)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    const xs = STAGES.map((_, i) => getStageX(i, W));
+
+    /* ── connector lines ── */
+    for (let i = 0; i < STAGES.length - 1; i++) {
+      const x1 = xs[i], x2 = xs[i + 1];
+      /* dashed pipe */
+      ctx.save();
+      ctx.strokeStyle = C.border;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 6]);
+      ctx.lineDashOffset = -(tick * 0.4);
+      ctx.beginPath(); ctx.moveTo(x1 + 20, CY); ctx.lineTo(x2 - 20, CY);
+      ctx.stroke();
+      ctx.restore();
+
+      /* arrow tip */
+      const ax = x2 - 22;
+      ctx.fillStyle = C.muted;
+      ctx.beginPath();
+      ctx.moveTo(ax + 6, CY);
+      ctx.lineTo(ax, CY - 4);
+      ctx.lineTo(ax, CY + 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    /* ── particles ── */
+    for (let p of particles) {
+      p.t += p.speed;
+      p.alpha = p.t < 0.1 ? p.t * 10 : p.t > 0.85 ? (1 - p.t) * 6.67 : 1;
+
+      const x1 = xs[p.stage], x2 = xs[p.nextStage];
+      const px = x1 + (x2 - x1) * p.t;
+      const py = CY + Math.sin(p.t * Math.PI) * -12;
+
+      p.trail.push({ x: px, y: py });
+      if (p.trail.length > 12) p.trail.shift();
+
+      /* trail */
+      for (let j = 1; j < p.trail.length; j++) {
+        const a = (j / p.trail.length) * p.alpha * 0.5;
+        ctx.strokeStyle = p.color + Math.round(a * 255).toString(16).padStart(2, '0');
+        ctx.lineWidth = p.size * (j / p.trail.length);
+        ctx.beginPath();
+        ctx.moveTo(p.trail[j - 1].x, p.trail[j - 1].y);
+        ctx.lineTo(p.trail[j].x, p.trail[j].y);
+        ctx.stroke();
+      }
+
+      /* dot */
+      ctx.beginPath();
+      ctx.arc(px, py, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    /* remove finished particles, possibly advance pulse */
+    for (let i = particles.length - 1; i >= 0; i--) {
+      if (particles[i].t >= 1) {
+        pulseStage = particles[i].nextStage;
+        pulseR = 0; pulseAlpha = 1;
+        particles.splice(i, 1);
+      }
+    }
+
+    /* ── pulse ring ── */
+    if (pulseAlpha > 0) {
+      pulseR += 1.6;
+      pulseAlpha -= 0.03;
+      const col = STAGES[Math.min(pulseStage, STAGES.length - 1)].color;
+      ctx.beginPath();
+      ctx.arc(xs[Math.min(pulseStage, STAGES.length - 1)], CY, pulseR, 0, Math.PI * 2);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = Math.max(0, pulseAlpha);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    /* ── stage nodes ── */
+    STAGES.forEach((s, i) => {
+      const x = xs[i];
+      const isActive = pulseStage === i && pulseAlpha > 0.3;
+
+      /* glow */
+      if (isActive) {
+        const g = ctx.createRadialGradient(x, CY, 0, x, CY, 32);
+        g.addColorStop(0, s.color + '28');
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, CY, 32, 0, Math.PI * 2); ctx.fill();
+      }
+
+      /* circle */
+      ctx.beginPath();
+      ctx.arc(x, CY, 18, 0, Math.PI * 2);
+      ctx.fillStyle = '#12141a';
+      ctx.fill();
+      ctx.strokeStyle = isActive ? s.color : C.border;
+      ctx.lineWidth = isActive ? 1.8 : 1;
+      ctx.stroke();
+
+      /* inner dot */
+      ctx.beginPath();
+      ctx.arc(x, CY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? s.color : C.muted;
+      ctx.fill();
+
+      /* label */
+      ctx.font = `600 11px "Syne", sans-serif`;
+      ctx.fillStyle = isActive ? s.color : C.text;
+      ctx.textAlign = 'center';
+      ctx.fillText(s.label, x, CY + 34);
+
+      /* sub-label */
+      ctx.font = `400 9px "DM Mono", monospace`;
+      ctx.fillStyle = C.textDim;
+      ctx.fillText(s.sub, x, CY + 46);
+    });
+
+    /* ── floating doc icons around stage 0 ── */
+    const docX = xs[0];
+    floaters.forEach((f, i) => {
+      const fy = CY - 30 + f.offsetY + Math.sin(tick * 0.015 * f.speed + f.phase) * 4;
+      const fx = docX - 30 + f.offsetX + i * 0;
+      ctx.strokeStyle = C.purple + '55';
+      ctx.fillStyle   = C.purple + '11';
+      ctx.lineWidth   = 0.8;
+      ctx.beginPath();
+      ctx.roundRect(fx - f.w / 2, fy - f.h / 2, f.w, f.h, 2);
+      ctx.fill(); ctx.stroke();
+
+      /* lines on doc */
+      ctx.strokeStyle = C.purple + '33';
+      ctx.lineWidth = 0.5;
+      for (let l = 0; l < 3; l++) {
+        const ly = fy - f.h / 2 + 4 + l * 4;
+        ctx.beginPath(); ctx.moveTo(fx - f.w / 2 + 2, ly); ctx.lineTo(fx + f.w / 2 - 2, ly); ctx.stroke();
+      }
+    });
+
+    /* ── vector grid dots around stage 2 ── */
+    const vx = xs[2];
+    for (let r = -1; r <= 1; r++) {
+      for (let c = -2; c <= 2; c++) {
+        if (r === 0 && c === 0) continue;
+        const dx = vx + c * 9, dy = CY - 32 + r * 8;
+        const dist = Math.sqrt(c * c + r * r);
+        const brightness = Math.sin(tick * 0.04 + dist * 0.8) * 0.5 + 0.5;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(110,231,183,${0.15 + brightness * 0.4})`;
+        ctx.fill();
+      }
+    }
+
+    /* ── token bars around LLM stage ── */
+    const lx = xs[5];
+    const barColors = [C.purple, C.green, C.pink, C.amber, C.purple];
+    barColors.forEach((bc, i) => {
+      const bh = 4 + Math.sin(tick * 0.05 + i * 1.1) * 3;
+      const by = CY - 36 + i * 5;
+      const bw = 8 + Math.sin(tick * 0.03 + i * 0.7) * 6;
+      ctx.fillStyle = bc + '44';
+      ctx.beginPath();
+      ctx.roundRect(lx - 22 + i * 8, by, bw, bh, 1);
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  /* ── spawn particles on a staggered schedule ── */
+  let spawnTick = 0;
+  const SPAWN_INTERVAL = 38; // frames between spawns
+  const originalDraw = draw;
+  function loop() {
+    spawnTick++;
+    if (spawnTick % SPAWN_INTERVAL === 0) {
+      const idx = Math.floor(Math.random() * (STAGES.length - 1));
+      spawnParticle(idx);
+      /* occasionally spawn a second wave from query node */
+      if (Math.random() < 0.3) setTimeout(() => spawnParticle(3), 180);
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* kick off with a few particles already in flight */
+  spawnParticle(0);
+  setTimeout(() => spawnParticle(1), 400);
+  setTimeout(() => spawnParticle(3), 800);
+  setTimeout(() => spawnParticle(4), 1200);
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
